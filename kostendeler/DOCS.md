@@ -24,10 +24,18 @@ Tip: wil je huisgenoot verder weinig van Home Assistant zien? Die kan via **Prof
 - **Voor wie**: vink mensen aan of uit om gelijk te verdelen, of tik op *Bedragen aanpassen* voor een eigen verdeling. Iets alleen voor je huisgenoot? Vink jezelf uit.
 - **Afrekenen**: stuur een Tikkie, tik daarna op *Afrekenen* en het saldo staat weer op nul. Een deel afrekenen kan ook.
 - **Vaste kosten** (onder Instellingen): huur, internet, energie enzovoort. Kies bedrag, wie betaalt, de verdeling en de dag van de maand; de app zet ze er op die dag automatisch bij. Een bedrag dat een keer afwijkt pas je gewoon aan in de lijst. Pauzeren kan ook.
-- **Per maand**: totaal, wie wat betaalde, uitgaven per categorie en een grafiek van de laatste maanden.
+- **Cijfers**: per maand of per jaar het totaal, wie wat betaalde, uitgaven per categorie en een grafiek. In het jaaroverzicht zie je ook het gemiddelde per maand.
 - **Instellingen**: categorieën toevoegen (met een eigen icoon), hernoemen of verbergen.
 
-Tik op een uitgave om hem te bewerken of te verwijderen.
+Tik op een uitgave om hem te bewerken of te verwijderen. Verwijderd per ongeluk? Tik binnen 6 seconden op **Ongedaan maken**.
+
+## Meldingen en maandrapport
+
+Ga in de app naar **Instellingen → Meldingen** en kies je telefoon (die verschijnt zodra je bent ingelogd in de Home Assistant Companion-app). Op de 1e van elke maand om 9:00 krijg je dan een overzicht van de vorige maand: totaal, jouw deel, de grootste kostenpost en het openstaande saldo. Met **Testmelding sturen** kun je het meteen proberen. Je huisgenoot stelt dit in op zijn of haar eigen account.
+
+## Donkere modus
+
+De app volgt automatisch de licht/donker-instelling van je telefoon of computer.
 
 ## Updaten
 

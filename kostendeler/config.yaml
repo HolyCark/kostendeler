@@ -1,5 +1,5 @@
 name: Kostendeler
-version: "1.7.0"
+version: "1.8.0"
 slug: kostendeler
 description: Deel boodschappen en huishoudkosten met je huisgenoten. Alles blijft op je eigen Home Assistant.
 arch:
@@ -14,3 +14,6 @@ panel_icon: mdi:cash-multiple
 panel_title: Kosten
 # Ook gebruikers zonder adminrechten (je huisgenoot) zien de app in de zijbalk.
 panel_admin: false
+# Nodig voor pushmeldingen via de Companion-app.
+homeassistant_api: true
+hassio_api: true

@@ -14,7 +14,8 @@ import calendar
 import sys
 import threading
 import time
-from datetime import date
+import urllib.request
+from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -38,7 +39,7 @@ DEFAULT_CATEGORIES = [
 EMOJI_TO_ICON = {"🛒": "cart", "🧽": "sparkle", "🧴": "bottle", "🛋️": "sofa", "🛋": "sofa",
                  "🍕": "utensils", "📦": "box"}
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_AMOUNT = 100_000_00  # 100.000 euro in centen
@@ -146,6 +147,16 @@ def init_db():
         )
         if not db.execute("SELECT 1 FROM categories WHERE name = 'Vaste lasten'").fetchone():
             db.execute("INSERT INTO categories(name, icon) VALUES ('Vaste lasten', 'home')")
+    if version < 4:
+        db.executescript(
+            """
+            ALTER TABLE users ADD COLUMN notify_service TEXT;
+            ALTER TABLE users ADD COLUMN monthly_report INTEGER NOT NULL DEFAULT 1;
+            CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT);
+            """
+        )
+        # Eerste maandrapport pas op de eerstvolgende 1e, niet direct na installatie.
+        kv_set(db, "last_report", month_add(date.today().strftime("%Y-%m"), -1))
     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     db.commit()
     db.close()
@@ -156,7 +167,18 @@ def user_ids(db):
 
 
 def list_users(db):
-    return [dict(r) for r in db.execute("SELECT id, name FROM users ORDER BY created_at, name")]
+    return [dict(r) for r in db.execute(
+        "SELECT id, name, notify_service, monthly_report FROM users ORDER BY created_at, name")]
+
+
+def kv_get(db, key):
+    row = db.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
+    return row[0] if row else None
+
+
+def kv_set(db, key, value):
+    db.execute("INSERT INTO kv(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+               (key, value))
 
 
 def list_categories(db):
@@ -199,7 +221,7 @@ def suggest_settlements(bal):
 def expense_rows(db, where, params):
     rows = db.execute(
         f"""SELECT e.id, e.description, e.amount, e.paid_by, e.date, e.category_id,
-                   e.created_by, e.created_at, e.recurring_id
+                   e.created_by, e.created_at, e.recurring_id, e.recurring_month
             FROM expenses e WHERE {where} ORDER BY e.date DESC, e.id DESC""",
         params,
     ).fetchall()
@@ -285,13 +307,115 @@ def recurring_rows(db):
 
 def background_generator():
     while True:
-        time.sleep(1800)
+        time.sleep(900)
         try:
             db = connect()
             generate_recurring(db)
+            maybe_send_monthly_report(db)
             db.close()
         except Exception as e:  # noqa: BLE001
-            print("Vaste kosten:", repr(e), file=sys.stderr)
+            print("Achtergrondtaak:", repr(e), file=sys.stderr)
+
+
+# ---------------------------------------------------------------- Home Assistant-meldingen
+
+SUPERVISOR_TOKEN = os.environ.get("SUPERVISOR_TOKEN")
+MONTHS_NL = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus",
+             "september", "oktober", "november", "december"]
+_panel_url = None
+
+
+def ha_call(method, path, body=None, base="http://supervisor/core/api"):
+    if not SUPERVISOR_TOKEN:
+        raise ApiError(503, "Meldingen werken alleen als de add-on in Home Assistant draait")
+    req = urllib.request.Request(
+        base + path, method=method, data=json.dumps(body).encode() if body is not None else None,
+        headers={"Authorization": f"Bearer {SUPERVISOR_TOKEN}", "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as res:
+            raw = res.read()
+            return json.loads(raw) if raw else None
+    except urllib.error.HTTPError as e:
+        raise ApiError(502, f"Home Assistant gaf een fout ({e.code})")
+    except OSError:
+        raise ApiError(502, "Home Assistant is niet bereikbaar")
+
+
+def panel_url():
+    """Pad naar de app in de HA-zijbalk, zodat een tik op de melding hem opent."""
+    global _panel_url
+    if _panel_url is None:
+        try:
+            info = ha_call("GET", "/addons/self/info", base="http://supervisor")
+            _panel_url = "/" + info["data"]["slug"]
+        except Exception:  # noqa: BLE001
+            _panel_url = ""
+    return _panel_url
+
+
+def notify_services():
+    services = []
+    for domain in ha_call("GET", "/services") or []:
+        if domain.get("domain") == "notify":
+            services += [name for name in domain.get("services", {}) if name not in ("notify", "persistent_notification")]
+    return sorted(services)
+
+
+def send_notification(service, title, message):
+    data = {"title": title, "message": message}
+    url = panel_url()
+    if url:
+        data["data"] = {"url": url, "clickAction": url}
+    ha_call("POST", f"/services/notify/{service}", data)
+
+
+def euro(cents):
+    s = f"{abs(cents) / 100:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"€ {s}"
+
+
+def report_text(db, uid, month):
+    names = {u["id"]: u["name"] for u in list_users(db)}
+    s = compute_summary(db, month)
+    y, m = month.split("-")
+    title = f"Kostendeler · {MONTHS_NL[int(m) - 1]} {y}"
+    lines = []
+    mine = s["per_user"].get(uid, {}).get("share", 0)
+    if s["total"]:
+        lines.append(f"Uitgegeven: {euro(s['total'])}, jouw deel {euro(mine)}.")
+        top = s["per_category"][0]
+        cat = db.execute("SELECT name FROM categories WHERE id = ?", (top["category_id"],)).fetchone()
+        lines.append(f"Meeste geld naar {cat[0] if cat else 'overig'}: {euro(top['total'])}.")
+    else:
+        lines.append("Geen uitgaven vorige maand.")
+    owed = [x for x in suggest_settlements(balances(db)) if uid in (x["from"], x["to"])]
+    if not owed:
+        lines.append("Jullie staan quitte.")
+    for x in owed:
+        if x["to"] == uid:
+            lines.append(f"{names.get(x['from'], 'Je huisgenoot')} betaalt jou nog {euro(x['amount'])}.")
+        else:
+            lines.append(f"Je betaalt {names.get(x['to'], 'je huisgenoot')} nog {euro(x['amount'])}.")
+    return title, " ".join(lines)
+
+
+def maybe_send_monthly_report(db, now=None):
+    now = now or datetime.now()
+    prev = month_add(now.strftime("%Y-%m"), -1)
+    if now.hour < 9 or kv_get(db, "last_report") == prev:
+        return 0
+    sent = 0
+    for u in list_users(db):
+        if u["notify_service"] and u["monthly_report"]:
+            title, msg = report_text(db, u["id"], prev)
+            try:
+                send_notification(u["notify_service"], title, msg)
+                sent += 1
+            except ApiError as e:
+                print(f"Maandrapport naar {u['name']} mislukt: {e.message}", file=sys.stderr)
+    kv_set(db, "last_report", prev)
+    db.commit()
+    return sent
 
 
 # ---------------------------------------------------------------- validatie
@@ -501,7 +625,8 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {"month": month, "expenses": expenses, "settlements": settlements}
 
         if path == "/summary" and method == "GET":
-            return 200, self.summary(db, require_month(qs))
+            year = (qs.get("year") or [None])[0]
+            return 200, compute_summary(db, year) if year else self.summary(db, require_month(qs))
 
         if path == "/expenses" and method == "POST":
             data = validate_expense(db, self.read_json())
@@ -540,9 +665,31 @@ class Handler(BaseHTTPRequestHandler):
                 db.commit()
                 return 200, expense_rows(db, "e.id = ?", (eid,))[0]
             if method == "DELETE":
+                deleted = expense_rows(db, "e.id = ?", (eid,))[0]
                 db.execute("DELETE FROM expenses WHERE id = ?", (eid,))
                 db.commit()
-                return 200, {"ok": True}
+                return 200, {"ok": True, "deleted": deleted}
+
+        if path == "/expenses/restore" and method == "POST":
+            body = self.read_json()
+            data = validate_expense(db, body)
+            eid = body.get("id")
+            if not isinstance(eid, int) or db.execute("SELECT 1 FROM expenses WHERE id = ?", (eid,)).fetchone():
+                eid = None
+            rid = body.get("recurring_id")
+            if rid is not None and not db.execute("SELECT 1 FROM recurring WHERE id = ?", (rid,)).fetchone():
+                rid = None
+            cur = db.execute(
+                "INSERT INTO expenses(id, description, amount, paid_by, date, category_id, created_by, created_at, "
+                "recurring_id, recurring_month) VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?)",
+                (eid, data["description"], data["amount"], data["paid_by"], data["date"], data["category_id"],
+                 body.get("created_by") or me, body.get("created_at"), rid,
+                 body.get("recurring_month") if rid else None))
+            new_id = cur.lastrowid
+            db.executemany("INSERT INTO expense_shares(expense_id, user_id, amount) VALUES (?, ?, ?)",
+                           [(new_id, u, c) for u, c in data["shares"].items()])
+            db.commit()
+            return 201, {"id": new_id}
 
         if path == "/settlements" and method == "POST":
             body = self.read_json()
@@ -560,8 +707,53 @@ class Handler(BaseHTTPRequestHandler):
 
         m = re.fullmatch(r"/settlements/(\d+)", path)
         if m and method == "DELETE":
+            row = db.execute("SELECT * FROM settlements WHERE id = ?", (int(m.group(1)),)).fetchone()
             db.execute("DELETE FROM settlements WHERE id = ?", (int(m.group(1)),))
             db.commit()
+            if row:
+                return 200, {"ok": True, "deleted": dict(row)}
+            return 200, {"ok": True}
+
+        if path == "/settlements/restore" and method == "POST":
+            body = self.read_json()
+            users = set(user_ids(db))
+            frm, to = body.get("from_user"), body.get("to_user")
+            if frm not in users or to not in users or frm == to:
+                raise ApiError(400, "Ongeldige personen")
+            sid = body.get("id")
+            if not isinstance(sid, int) or db.execute("SELECT 1 FROM settlements WHERE id = ?", (sid,)).fetchone():
+                sid = None
+            cur = db.execute(
+                "INSERT INTO settlements(id, from_user, to_user, amount, date, created_by, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))",
+                (sid, frm, to, parse_amount(body.get("amount")), parse_date(body.get("date")),
+                 body.get("created_by") or me, body.get("created_at")))
+            db.commit()
+            return 201, {"id": cur.lastrowid}
+
+        if path == "/me" and method == "PUT":
+            body = self.read_json()
+            if "notify_service" in body:
+                svc = body["notify_service"] or None
+                if svc is not None and not re.fullmatch(r"[a-z0-9_]{1,80}", str(svc)):
+                    raise ApiError(400, "Ongeldige meldingsdienst")
+                db.execute("UPDATE users SET notify_service = ? WHERE id = ?", (svc, me))
+            if "monthly_report" in body:
+                db.execute("UPDATE users SET monthly_report = ? WHERE id = ?", (1 if body["monthly_report"] else 0, me))
+            db.commit()
+            return 200, {"ok": True}
+
+        if path == "/notify/services" and method == "GET":
+            if not SUPERVISOR_TOKEN:
+                return 200, {"available": False, "services": []}
+            return 200, {"available": True, "services": notify_services()}
+
+        if path == "/notify/test" and method == "POST":
+            row = db.execute("SELECT notify_service FROM users WHERE id = ?", (me,)).fetchone()
+            if not row or not row["notify_service"]:
+                raise ApiError(400, "Kies eerst waar meldingen heen moeten")
+            title, msg = report_text(db, me, month_add(date.today().strftime("%Y-%m"), -1))
+            send_notification(row["notify_service"], "Testmelding · " + title, msg)
             return 200, {"ok": True}
 
         if path == "/recurring" and method == "GET":
@@ -656,38 +848,8 @@ class Handler(BaseHTTPRequestHandler):
         return value
 
     def summary(self, db, month):
-        total = db.execute(
-            "SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE substr(date,1,7) = ?",
-            (month,)).fetchone()[0]
-        per_category = [dict(r) for r in db.execute(
-            """SELECT e.category_id, SUM(e.amount) AS total, COUNT(*) AS count
-               FROM expenses e WHERE substr(e.date,1,7) = ?
-               GROUP BY e.category_id ORDER BY total DESC""", (month,))]
-        cat_shares = {}
-        for r in db.execute(
-                """SELECT e.category_id, s.user_id, SUM(s.amount) AS share
-                   FROM expenses e JOIN expense_shares s ON s.expense_id = e.id
-                   WHERE substr(e.date,1,7) = ? GROUP BY e.category_id, s.user_id""", (month,)):
-            cat_shares.setdefault(r["category_id"], {})[r["user_id"]] = r["share"]
-        for c in per_category:
-            c["shares"] = cat_shares.get(c["category_id"], {})
-        per_user = {uid: {"paid": 0, "share": 0} for uid in user_ids(db)}
-        for r in db.execute(
-                "SELECT paid_by, SUM(amount) s FROM expenses WHERE substr(date,1,7)=? GROUP BY paid_by",
-                (month,)):
-            per_user.setdefault(r["paid_by"], {"paid": 0, "share": 0})["paid"] = r["s"]
-        for r in db.execute(
-                """SELECT s.user_id, SUM(s.amount) sh FROM expenses e
-                   JOIN expense_shares s ON s.expense_id = e.id
-                   WHERE substr(e.date,1,7)=? GROUP BY s.user_id""", (month,)):
-            per_user.setdefault(r["user_id"], {"paid": 0, "share": 0})["share"] = r["sh"]
-        history = [dict(r) for r in db.execute(
-            """SELECT substr(date,1,7) AS month, SUM(amount) AS total FROM expenses
-               WHERE substr(date,1,7) <= ? GROUP BY month ORDER BY month DESC LIMIT 12""",
-            (month,))]
-        history.reverse()
-        return {"month": month, "total": total, "per_category": per_category,
-                "per_user": per_user, "history": history}
+        return compute_summary(db, month)
+
 
     def serve_static(self, path):
         rel = path.lstrip("/") or "index.html"
@@ -705,6 +867,52 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(data)
+
+
+def compute_summary(db, period):
+    """Overzicht voor een maand ('2026-11') of een heel jaar ('2026')."""
+    if not re.fullmatch(r"\d{4}(-\d{2})?", period):
+        raise ApiError(400, "Ongeldige periode")
+    n = len(period)
+    month = period
+    total = db.execute(
+        f"SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE substr(date,1,{n}) = ?",
+        (month,)).fetchone()[0]
+    per_category = [dict(r) for r in db.execute(
+        f"""SELECT e.category_id, SUM(e.amount) AS total, COUNT(*) AS count
+           FROM expenses e WHERE substr(e.date,1,{n}) = ?
+           GROUP BY e.category_id ORDER BY total DESC""", (month,))]
+    cat_shares = {}
+    for r in db.execute(
+            f"""SELECT e.category_id, s.user_id, SUM(s.amount) AS share
+               FROM expenses e JOIN expense_shares s ON s.expense_id = e.id
+               WHERE substr(e.date,1,{n}) = ? GROUP BY e.category_id, s.user_id""", (month,)):
+        cat_shares.setdefault(r["category_id"], {})[r["user_id"]] = r["share"]
+    for c in per_category:
+        c["shares"] = cat_shares.get(c["category_id"], {})
+    per_user = {uid: {"paid": 0, "share": 0} for uid in user_ids(db)}
+    for r in db.execute(
+            f"SELECT paid_by, SUM(amount) s FROM expenses WHERE substr(date,1,{n})=? GROUP BY paid_by",
+            (month,)):
+        per_user.setdefault(r["paid_by"], {"paid": 0, "share": 0})["paid"] = r["s"]
+    for r in db.execute(
+            f"""SELECT s.user_id, SUM(s.amount) sh FROM expenses e
+               JOIN expense_shares s ON s.expense_id = e.id
+               WHERE substr(e.date,1,{n})=? GROUP BY s.user_id""", (month,)):
+        per_user.setdefault(r["user_id"], {"paid": 0, "share": 0})["share"] = r["sh"]
+    if n == 7:
+        history = [dict(r) for r in db.execute(
+            """SELECT substr(date,1,7) AS month, SUM(amount) AS total FROM expenses
+               WHERE substr(date,1,7) <= ? GROUP BY month ORDER BY month DESC LIMIT 12""",
+            (month,))]
+        history.reverse()
+    else:
+        totals = {r["month"]: r["total"] for r in db.execute(
+            """SELECT substr(date,1,7) AS month, SUM(amount) AS total FROM expenses
+               WHERE substr(date,1,4) = ? GROUP BY month""", (period,))}
+        history = [{"month": f"{period}-{m:02d}", "total": totals.get(f"{period}-{m:02d}", 0)} for m in range(1, 13)]
+    return {"month" if n == 7 else "year": period, "total": total, "per_category": per_category,
+            "per_user": per_user, "history": history}
 
 
 def main():
