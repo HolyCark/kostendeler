@@ -23,6 +23,7 @@ Tip: wil je huisgenoot verder weinig van Home Assistant zien? Die kan via **Prof
 - **+** om een uitgave toe te voegen: bedrag, omschrijving, categorie, wie betaalde en voor wie.
 - **Voor wie**: vink mensen aan of uit om gelijk te verdelen, of tik op *Bedragen aanpassen* voor een eigen verdeling. Iets alleen voor je huisgenoot? Vink jezelf uit.
 - **Afrekenen**: stuur een Tikkie, tik daarna op *Afrekenen* en het saldo staat weer op nul. Een deel afrekenen kan ook.
+- **Vaste kosten** (onder Instellingen): huur, internet, energie enzovoort. Kies bedrag, wie betaalt, de verdeling en de dag van de maand; de app zet ze er op die dag automatisch bij. Een bedrag dat een keer afwijkt pas je gewoon aan in de lijst. Pauzeren kan ook.
 - **Per maand**: totaal, wie wat betaalde, uitgaven per categorie en een grafiek van de laatste maanden.
 - **Instellingen**: categorieën toevoegen (met een eigen icoon), hernoemen of verbergen.
 

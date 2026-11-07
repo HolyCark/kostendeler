@@ -21,7 +21,8 @@
     --radius: 26px;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; color: var(--text); background: var(--bg);
+  html { background: var(--bg); }
+  html, body { margin: 0; color: var(--text);
     font: 400 16px/1.4 "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
   body::before { content: ""; position: fixed; inset: -10%; z-index: -1; pointer-events: none;
     background:
@@ -198,7 +199,13 @@
   .chart .labels button.cur { color: var(--text); font-weight: 500; }
   .settings-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; }
   .settings-item:first-of-type, .card-head + .settings-item { border-top: 0; }
-  .settings-item .grow { flex: 1; }
+  .settings-item .grow { flex: 1; min-width: 0; }
+  .settings-item .two { display: block; font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .settings-item .side { font-size: 12px; white-space: nowrap; }
+  .title .rep { width: 14px; height: 14px; vertical-align: -1px; margin-left: 6px; color: var(--muted); stroke-width: 1.8; }
+  .item .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  select.input { appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, #6c727c 50%), linear-gradient(135deg, #6c727c 50%, transparent 50%);
+    background-position: calc(100% - 20px) 55%, calc(100% - 15px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 40px; }
   .muted { color: var(--muted); }
   h4 { margin: 0 0 10px; font-size: 16px; font-weight: 400; }
 
@@ -217,7 +224,7 @@
   .input, .chip, .check { will-change: transform; }
 
   @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-  .enter > * { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+  .enter .a { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
   @keyframes tickOn { from { stroke: var(--tick-off); } }
   .enter .tk.on { animation: tickOn .25s ease-out both; }
   @keyframes growX { from { transform: scaleX(0); } }
@@ -245,6 +252,57 @@
   .overlay.closing .sheet { animation: down .2s cubic-bezier(.4,0,1,1) forwards; }
   @keyframes overlayOut { to { background: rgba(40, 44, 52, 0); backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); } }
   @keyframes down { to { transform: translateY(100%); } }
+
+  /* ---------- layout: mobiel = gestapeld, desktop = kolommen ---------- */
+  .brand, nav.tabs .plus span { display: none; }
+  .cols { display: block; }
+
+  @media (min-width: 900px) {
+    .app { max-width: 1500px; margin: 0 auto; padding: 40px 44px 48px 304px; }
+    .navfade { display: none; }
+    nav.tabs { left: 24px; top: 24px; bottom: 24px; right: auto; width: 236px; padding: 22px 14px; margin: 0;
+      flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 6px;
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: 28px; box-shadow: var(--shadow);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+    .brand { order: -2; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; padding: 0 8px 18px; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--pill); color: #fff; font-size: 17px; }
+    nav.tabs .plus { order: -1; width: 100%; height: 50px; border-radius: 16px; border: 0; justify-content: flex-start; gap: 10px; padding: 0 16px;
+      background: var(--pill); color: #fff; box-shadow: var(--pill-shadow); margin-bottom: 14px; font-size: 15px; }
+    nav.tabs .plus span { display: inline; }
+    nav.tabs .plus svg { width: 20px; height: 20px; }
+    nav.tabs .tab, nav.tabs .tab.active { width: 100%; height: 48px; border-radius: 14px; justify-content: flex-start; gap: 12px; padding: 0 16px;
+      background: transparent; border: 0; box-shadow: none; color: #3b4048; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    nav.tabs .tab span { max-width: none; opacity: 1; }
+    nav.tabs .tab.active { background: rgba(255, 255, 255, .9); color: var(--text); font-weight: 500; box-shadow: 0 2px 10px rgba(30, 34, 39, .08); }
+    nav.tabs .tab:active, nav.tabs .plus:active { transform: scale(.98); }
+
+    .hello { margin: 0 2px 26px; }
+    .hello h1 { font-size: 34px; }
+    .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+    .col-side { position: sticky; top: 40px; }
+    .col > .monthnav:first-child { margin-top: 0; }
+    .col > .day:nth-child(2) { margin-top: 6px; }
+    .big { font-size: 48px; }
+    .chart svg { height: 200px; }
+
+    .overlay { align-items: center; padding: 24px; }
+    .sheet { max-width: 520px; max-height: 88vh; border-radius: 28px; border: 1px solid #fff; padding: 24px 26px 24px;
+      animation: dialogIn .26s cubic-bezier(.2, 1.1, .35, 1); }
+    .sheet .grip { display: none; }
+    @keyframes dialogIn { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+    .overlay.closing .sheet { animation: dialogOut .16s ease-in forwards; }
+    @keyframes dialogOut { to { opacity: 0; transform: translateY(8px) scale(.98); } }
+  }
+  @media (min-width: 1240px) {
+    .cols { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+  }
+  @media (hover: hover) {
+    .item:hover, .settings-item:hover { background: rgba(30, 34, 39, .035); }
+    .wide:hover, .btn:not(.primary):hover, .chip:not(.on):hover, .icon-pick:not(.on):hover, .iconbtn:hover:not(:disabled) { background: #fff; }
+    nav.tabs .tab:not(.active):hover { background: rgba(255, 255, 255, .6); }
+    .btn.primary:hover, nav.tabs .plus:hover { filter: brightness(1.12); }
+    .linkbtn:hover { text-decoration-color: currentColor; }
+  }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
@@ -252,9 +310,10 @@
 <div class="app" id="app"><div class="loading">Laden…</div></div>
 <div class="navfade hidden" id="navfade"></div>
 <nav class="tabs hidden" id="tabs">
+  <div class="brand"><span class="brand-mark">€</span>Kostendeler</div>
   <button class="tab active" data-tab="home" aria-label="Overzicht"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/></svg><span>Overzicht</span></button>
   <button class="tab" data-tab="stats" aria-label="Per maand"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-6M20 19V9"/></svg><span>Per maand</span></button>
-  <button class="plus" id="fab" aria-label="Uitgave toevoegen"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button>
+  <button class="plus" id="fab" aria-label="Uitgave toevoegen"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg><span>Nieuwe uitgave</span></button>
   <button class="tab" data-tab="settings" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Instellingen</span></button>
 </nav>
 <div id="overlay-root"></div>
@@ -298,12 +357,13 @@ const store = {
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
 // Zachte kleuren per categorie (zoals de activiteitsringen).
-const PALETTE = ["#ee8fb5", "#4fcf9f", "#7fa3ee", "#a99bea", "#f3a65e", "#4cc3d6", "#e9c44f", "#ee8b8b"];
+const PALETTE = ["#ee8fb5", "#4fcf9f", "#7fa3ee", "#a99bea", "#f3a65e", "#4cc3d6", "#e9c44f", "#9aa6b8"];
 const catColor = id => id == null ? "#94a3b8" : PALETTE[(Number(id) - 1) % PALETTE.length];
 const tint = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
 const CAT_ICONS = {"cart": "<circle cx=\"9\" cy=\"20\" r=\"1.3\"/><circle cx=\"17\" cy=\"20\" r=\"1.3\"/><path d=\"M3 4h2.2l2.3 11h10.3l2-8H6.4\"/>","sparkle": "<path d=\"M11 4l1.6 4.4L17 10l-4.4 1.6L11 16l-1.6-4.4L5 10l4.4-1.6z\"/><path d=\"M18 14.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z\"/>","bottle": "<path d=\"M10 3h4v3l1.5 2.5V19a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V8.5L10 6z\"/><path d=\"M8.5 12.5h7\"/>","sofa": "<path d=\"M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3\"/><path d=\"M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v4H3z\"/><path d=\"M5 17v2M19 17v2\"/>","utensils": "<path d=\"M5 3v5a2 2 0 0 0 4 0V3M7 3v18\"/><path d=\"M17 21V3c-2 1-3 3.5-3 7h3\"/>","box": "<path d=\"M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z\"/><path d=\"M3.5 7.5 12 12l8.5-4.5M12 12v9\"/>","home": "<path d=\"M4 11 12 4l8 7\"/><path d=\"M6 9.5V20h12V9.5\"/>","bolt": "<path d=\"M13 3 5 14h6l-1 7 8-11h-6z\"/>","wifi": "<path d=\"M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0\"/><circle cx=\"12\" cy=\"19.2\" r=\".9\"/>","gift": "<rect x=\"4\" y=\"9\" width=\"16\" height=\"11\" rx=\"1.5\"/><path d=\"M3 9h18M12 9v11\"/><path d=\"M12 9C10.5 6 7 5.5 7 7.8 7 9 12 9 12 9zm0 0c1.5-3 5-3.5 5-1.2C17 9 12 9 12 9z\"/>","cup": "<path d=\"M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z\"/><path d=\"M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v2M11 3v2\"/>","plant": "<path d=\"M12 21v-9\"/><path d=\"M12 12c0-4 3-6 7-6 0 4-3 6-7 6zM12 14.5c0-3-2.5-5-6-5 0 3 2.5 5 6 5z\"/>","wrench": "<path d=\"M15 4a4 4 0 0 0-3.7 5.5L4 16.8V20h3.2l7.3-7.3A4 4 0 0 0 20 9l-2.5 2.5-2.5-.5-.5-2.5z\"/>","paw": "<circle cx=\"8\" cy=\"8.5\" r=\"1.6\"/><circle cx=\"16\" cy=\"8.5\" r=\"1.6\"/><circle cx=\"4.8\" cy=\"12.8\" r=\"1.4\"/><circle cx=\"19.2\" cy=\"12.8\" r=\"1.4\"/><path d=\"M12 12c-2.5 0-5 3.5-5 5.5S9 20 12 20s5-.5 5-2.5-2.5-5.5-5-5.5z\"/>","shirt": "<path d=\"M8 3 3.5 6l2 4L8 9v12h8V9l2.5 1 2-4L16 3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z\"/>","tag": "<path d=\"M3 12V4h8l9 9-8 8z\"/><circle cx=\"7.5\" cy=\"8.5\" r=\"1.3\"/>"};
 const catIcon = key => `<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICONS[key] || CAT_ICONS.box}</svg>`;
 const SWAP_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>';
+const REPEAT_ICON = '<svg class="ci rep" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11V9a3 3 0 0 1 3-3h12l-3-3M20 13v2a3 3 0 0 1-3 3H5l3 3"/></svg>';
 const CHECK_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9"/></svg>';
 const ICON = {
   wallet: '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg>',
@@ -317,7 +377,7 @@ const ICON = {
 
 const S = {
   me: null, ingress: true, users: [], categories: [],
-  tab: "home", month: thisMonth(), counts: {}, firstPaint: true, animate: true, fresh: null,
+  tab: "home", month: thisMonth(), counts: {}, firstPaint: true, animate: true, fresh: null, recurring: [],
   balances: {}, suggestions: [], activity: { expenses: [], settlements: [] }, summary: null,
 };
 
@@ -384,9 +444,9 @@ async function boot() {
 }
 
 async function refresh() {
-  const [b, a, s] = await Promise.all([
-    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month)]);
-  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s;
+  const [b, a, s, r] = await Promise.all([
+    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month), api("GET", "/recurring")]);
+  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s; S.recurring = r.recurring;
   render();
 }
 
@@ -408,7 +468,8 @@ function render() {
   app.classList.remove("enter");
   if (S.animate) {
     void app.offsetWidth; // herstart animaties
-    [...app.children].forEach((el, i) => el.style.setProperty("--i", Math.min(i, 8)));
+    [...app.children].flatMap(el => el.classList.contains("cols") ? [...el.querySelectorAll(":scope > .col > *")] : [el])
+      .forEach((el, i) => { el.classList.add("a"); el.style.setProperty("--i", Math.min(i, 8)); });
     app.classList.add("enter");
     S.animate = false;
   }
@@ -526,7 +587,7 @@ function renderHome() {
         const e = it.data, c = cat(e.category_id), col = catColor(e.category_id);
         list += `<button class="item ${S.fresh === "e" + e.id ? "fresh" : ""}" data-act="edit" data-id="${e.id}">
           <div class="ico" style="background:${tint(col, .16)};box-shadow:inset 0 0 0 1px ${tint(col, .3)}">${catIcon(c?.icon)}</div>
-          <div class="main"><div class="title">${esc(e.description)}</div>
+          <div class="main"><div class="title">${esc(e.description)}${e.recurring_id ? REPEAT_ICON : ""}</div>
             <div class="meta">${esc(nameOf(e.paid_by, true))} betaalde${c ? " · " + esc(c.name) : ""}</div></div>
           <div class="right"><div class="amt tnum">${fmt(e.amount)}</div>${expenseEffect(e)}</div></button>`;
       } else {
@@ -540,7 +601,7 @@ function renderHome() {
     }
     if (open) list += `</div>`;
   }
-  return header + renderHero() + renderTiles() + monthNav() + list;
+  return header + `<div class="cols"><div class="col col-side">${renderHero()}${renderTiles()}</div><div class="col">${monthNav()}${list}</div></div>`;
 }
 
 function lineChart(hist) {
@@ -586,9 +647,9 @@ function renderStats() {
     <div class="chart">${lineChart(s.history)}<div class="labels">${s.history.map(h =>
       `<button data-act="goto-month" data-m="${h.month}" class="${h.month === S.month ? "cur" : ""}">${esc(monthShort(h.month))}</button>`).join("")}</div></div></div>` : "";
   return `<header class="hello"><div class="txt"><div class="date">Kostendeler</div><h1>Per maand</h1></div></header>` + monthNav().replace('margin: 22px', '') + `
-    <div class="card"><div class="card-head">${ICON.wallet}<span class="sp">Totaal uitgegeven</span></div>
-      <div class="big tnum" style="margin-bottom:10px">${big(s.total, "stotal")}</div>${people}</div>
-    <div class="card"><div class="card-head">${ICON.tag}<span class="sp">Per categorie</span></div>${cats}</div>${hist}`;
+    <div class="cols"><div class="col"><div class="card"><div class="card-head">${ICON.wallet}<span class="sp">Totaal uitgegeven</span></div>
+      <div class="big tnum" style="margin-bottom:10px">${big(s.total, "stotal")}</div>${people}</div>${hist}</div>
+    <div class="col"><div class="card"><div class="card-head">${ICON.tag}<span class="sp">Per categorie</span></div>${cats}</div></div></div>`;
 }
 
 function renderSettings() {
@@ -597,14 +658,24 @@ function renderSettings() {
     <span class="grow ${c.archived ? "muted" : ""}">${esc(c.name)}${c.archived ? " (verborgen)" : ""}</span><span class="muted">›</span></button>`).join("");
   const users = S.users.map(u => `<div class="settings-item"><span class="avatar" style="width:36px;height:36px;flex-basis:36px;font-size:13px">${esc(initials(u.name))}</span>
     <span class="grow">${esc(u.name)}${u.id === S.me ? " <span class='muted'>(jij)</span>" : ""}</span></div>`).join("");
+  const recs = S.recurring.map(r => {
+    const c = cat(r.category_id);
+    const when = r.day === 31 ? "laatste dag van de maand" : `elke ${r.day}e van de maand`;
+    const next = r.active ? `volgende ${new Date(r.next_date + "T00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "short" }).replace(".", "")}` : "gepauzeerd";
+    return `<button class="settings-item" data-act="edit-rec" data-id="${r.id}">
+      <span class="ico" style="width:36px;height:36px;flex-basis:36px;background:${tint(catColor(r.category_id), .16)};${r.active ? "" : "opacity:.45"}">${catIcon(c?.icon)}</span>
+      <span class="grow ${r.active ? "" : "muted"}">${esc(r.description)}<span class="two">${fmt(r.amount)} · ${when}</span></span>
+      <span class="muted side">${esc(next)}</span></button>`;
+  }).join("") || `<div class="hint" style="margin:0">Huur, internet of energie? Voeg ze hier toe, dan zet de app ze elke maand op de gekozen dag automatisch in de lijst.</div>`;
   return `
     <header class="hello"><div class="txt"><div class="date">Kostendeler</div><h1>Instellingen</h1></div></header>
-    <div class="card"><div class="card-head">${ICON.tag}<span class="sp">Categorieën</span><button class="linkbtn" data-act="add-cat">+ Nieuwe</button></div>${cats}</div>
-    <div class="card"><div class="card-head">${ICON.people}<span class="sp">Huisgenoten</span></div>${users}
+    <div class="cols"><div class="col"><div class="card"><div class="card-head">${REPEAT_ICON.replace('class="ci rep"', 'class="ci"')}<span class="sp">Vaste kosten</span><button class="linkbtn" data-act="add-rec">+ Nieuwe</button></div>${recs}</div>
+    <div class="card"><div class="card-head">${ICON.tag}<span class="sp">Categorieën</span><button class="linkbtn" data-act="add-cat">+ Nieuwe</button></div>${cats}</div></div>
+    <div class="col"><div class="card"><div class="card-head">${ICON.people}<span class="sp">Huisgenoten</span></div>${users}
       <div class="hint">${S.ingress
         ? "Iedereen met een Home Assistant-account verschijnt hier zodra die de app één keer opent."
         : `Terugvalmodus (geen Home Assistant-login). <button class="linkbtn" data-act="switch-user">Wissel van gebruiker</button>`}</div></div>
-    <div class="card"><div class="card-head">${ICON.lock}<span class="sp">Privacy</span></div><div class="hint" style="margin:0">Alle gegevens staan in een SQLite-database op je eigen Home Assistant en gaan mee in de HA-back-ups. Er gaat niets naar buiten.</div></div>`;
+    <div class="card"><div class="card-head">${ICON.lock}<span class="sp">Privacy</span></div><div class="hint" style="margin:0">Alle gegevens staan in een SQLite-database op je eigen Home Assistant en gaan mee in de HA-back-ups. Er gaat niets naar buiten.</div></div></div></div>`;
 }
 
 // ------------------------------------------------------------ sheets
@@ -625,16 +696,19 @@ function closeSheet() {
 }
 
 // ---- uitgave toevoegen / bewerken
-function expenseSheet(existing) {
+function expenseSheet(existing, recurring = false) {
   const activeCats = S.categories.filter(c => !c.archived || c.id === existing?.category_id);
+  const fixedCat = S.categories.find(c => c.name === "Vaste lasten" && !c.archived);
   const F = existing ? {
     id: existing.id, amount: centsToInput(existing.amount), description: existing.description,
     category_id: existing.category_id, paid_by: existing.paid_by, date: existing.date,
     who: new Set(Object.keys(existing.shares)), custom: false, customVals: {},
   } : {
-    id: null, amount: "", description: "", category_id: activeCats[0]?.id ?? null,
+    id: null, amount: "", description: "", category_id: (recurring && fixedCat ? fixedCat.id : activeCats[0]?.id) ?? null,
     paid_by: S.me, date: todayISO(), who: new Set(S.users.map(u => u.id)), custom: false, customVals: {},
   };
+  F.day = existing?.day ?? Math.min(new Date().getDate(), 28);
+  F.includeNow = true;
   // Bewerken: als de opgeslagen verdeling niet gelijk is, open in aangepaste modus.
   if (existing) {
     const eq = equalSplit(existing.amount, S.users.map(u => u.id).filter(id => F.who.has(id)));
@@ -645,18 +719,24 @@ function expenseSheet(existing) {
   }
 
   openSheet(`
-    <h3>${existing ? "Uitgave bewerken" : "Nieuwe uitgave"}</h3>
+    <h3>${recurring ? (existing ? "Vaste uitgave bewerken" : "Nieuwe vaste uitgave") : (existing ? "Uitgave bewerken" : "Nieuwe uitgave")}</h3>
     <div class="field"><div class="amount-input"><span>€</span>
       <input id="f-amount" inputmode="decimal" placeholder="0,00" value="${esc(F.amount)}" autocomplete="off"></div></div>
     <div class="field"><label for="f-desc">Omschrijving</label>
-      <input class="input" id="f-desc" placeholder="Bijv. Albert Heijn" maxlength="200" value="${esc(F.description)}"></div>
+      <input class="input" id="f-desc" placeholder="${recurring ? "Bijv. Huur" : "Bijv. Albert Heijn"}" maxlength="200" value="${esc(F.description)}"></div>
     <div class="field"><span class="label">Categorie</span><div class="chips" id="f-cats"></div></div>
     <div class="field"><span class="label">Betaald door</span><div class="chips" id="f-payer"></div></div>
     <div class="field"><div class="toggle-line"><span class="label">Voor wie</span>
       <button class="linkbtn" id="f-mode"></button></div><div id="f-split"></div><div class="hint" id="f-hint"></div></div>
-    <div class="field"><label for="f-date">Datum</label><input class="input" type="date" id="f-date" value="${esc(F.date)}"></div>
+    ${recurring ? `<div class="field"><label for="f-day">Elke maand op</label>
+      <select class="input" id="f-day">${Array.from({ length: 31 }, (_, i) => i + 1).map(d =>
+        `<option value="${d}" ${d === F.day ? "selected" : ""}>${d === 31 ? "de laatste dag" : `de ${d}e`}</option>`).join("")}</select>
+      ${existing ? "" : `<div class="split-row hidden" id="f-now-row"><button class="check on" id="f-now" aria-label="Deze maand ook toevoegen">${CHECK_ICON}</button>
+        <span class="who">Deze maand ook al toevoegen</span></div>`}
+      <div class="hint">Wordt op die dag automatisch toegevoegd. Wijkt een bedrag een keer af? Pas die uitgave dan aan in de lijst.</div></div>`
+    : `<div class="field"><label for="f-date">Datum</label><input class="input" type="date" id="f-date" value="${esc(F.date)}"></div>`}
     <button class="btn primary block" id="f-save">Opslaan</button>
-    ${existing ? `<div class="row-actions"><button class="btn danger" id="f-del">Verwijderen</button></div>` : ""}
+    ${existing ? `<div class="row-actions">${recurring ? `<button class="btn" id="f-pause">${existing.active ? "Pauzeren" : "Hervatten"}</button>` : ""}<button class="btn danger" id="f-del">Verwijderen</button></div>` : ""}
   `, sheet => {
     const $ = s => sheet.querySelector(s);
     const amountEl = $("#f-amount");
@@ -731,8 +811,29 @@ function expenseSheet(existing) {
       F.customVals[i.dataset.cu] = i.value; updateHint();
     });
 
+    if (recurring && !existing) {
+      const syncNow = () => $("#f-now-row").classList.toggle("hidden", Number($("#f-day").value) >= new Date().getDate());
+      $("#f-day").addEventListener("change", syncNow); syncNow();
+      $("#f-now").addEventListener("click", () => { F.includeNow = !F.includeNow; $("#f-now").classList.toggle("on", F.includeNow); $("#f-now").classList.add("pop"); });
+    }
+    recurring && existing && $("#f-pause").addEventListener("click", async () => {
+      try { await api("PUT", "/recurring/" + F.id, { active: !existing.active }); buzz(); closeSheet();
+        toast(existing.active ? "Gepauzeerd" : "Hervat"); await refresh(); }
+      catch (err) { toast(err.message); }
+    });
+
     $("#f-save").addEventListener("click", async () => {
       const { total, shares } = currentShares();
+      if (recurring) {
+        const body = { description: $("#f-desc").value.trim(), amount: total, paid_by: F.paid_by,
+          category_id: F.category_id, shares, day: Number($("#f-day").value), include_current: F.includeNow };
+        $("#f-save").disabled = true;
+        try {
+          if (F.id) await api("PUT", "/recurring/" + F.id, body); else await api("POST", "/recurring", body);
+          buzz(); closeSheet(); toast("Vaste uitgave opgeslagen"); await refresh();
+        } catch (err) { toast(err.message); $("#f-save").disabled = false; }
+        return;
+      }
       const body = { description: $("#f-desc").value.trim(), amount: total, paid_by: F.paid_by,
         date: $("#f-date").value || todayISO(), category_id: F.category_id, shares };
       $("#f-save").disabled = true;
@@ -743,8 +844,8 @@ function expenseSheet(existing) {
       } catch (err) { toast(err.message); $("#f-save").disabled = false; }
     });
     existing && $("#f-del").addEventListener("click", async () => {
-      if (!confirm("Deze uitgave verwijderen?")) return;
-      try { await api("DELETE", "/expenses/" + F.id); buzz(); closeSheet(); toast("Verwijderd"); await refresh(); }
+      if (!confirm(recurring ? "Deze vaste uitgave verwijderen? Eerder toegevoegde bedragen blijven in de lijst staan." : "Deze uitgave verwijderen?")) return;
+      try { await api("DELETE", (recurring ? "/recurring/" : "/expenses/") + F.id); buzz(); closeSheet(); toast("Verwijderd"); await refresh(); }
       catch (err) { toast(err.message); }
     });
   });
@@ -856,7 +957,6 @@ document.getElementById("tabs").addEventListener("click", async e => {
   const b = e.target.closest("[data-tab]"); if (!b) return;
   if (S.tab === b.dataset.tab) return;
   S.tab = b.dataset.tab; S.animate = true; syncTabs();
-  if (S.tab === "settings") { render(); window.scrollTo(0, 0); return; }
   refresh().then(() => window.scrollTo(0, 0)).catch(err => toast(err.message));
 });
 document.getElementById("app").addEventListener("click", async e => {
@@ -870,6 +970,8 @@ document.getElementById("app").addEventListener("click", async e => {
   else if (act === "settle") settleSheet(S.suggestions[Number(b.dataset.i)]);
   else if (act === "edit-cat") categorySheet(cat(Number(b.dataset.id)));
   else if (act === "add-cat") categorySheet(null);
+  else if (act === "add-rec") expenseSheet(null, true);
+  else if (act === "edit-rec") expenseSheet(S.recurring.find(x => x.id === Number(b.dataset.id)), true);
   else if (act === "switch-user") { store.del("kostendeler-user"); S.me = null; boot(); }
 });
 // Bijwerken als je terugkomt in de app (bijv. huisgenoot heeft iets toegevoegd).

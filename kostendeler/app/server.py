@@ -10,7 +10,10 @@ import mimetypes
 import os
 import re
 import sqlite3
+import calendar
 import sys
+import threading
+import time
 from datetime import date
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -35,7 +38,7 @@ DEFAULT_CATEGORIES = [
 EMOJI_TO_ICON = {"🛒": "cart", "🧽": "sparkle", "🧴": "bottle", "🛋️": "sofa", "🛋": "sofa",
                  "🍕": "utensils", "📦": "box"}
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_AMOUNT = 100_000_00  # 100.000 euro in centen
@@ -113,6 +116,36 @@ def init_db():
             if not re.fullmatch(r"[a-z]+", row["icon"] or ""):
                 db.execute("UPDATE categories SET icon = ? WHERE id = ?",
                            (EMOJI_TO_ICON.get(row["icon"], "box"), row["id"]))
+    if version < 3:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS recurring(
+                id INTEGER PRIMARY KEY,
+                description TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                paid_by TEXT NOT NULL REFERENCES users(id),
+                category_id INTEGER REFERENCES categories(id),
+                day INTEGER NOT NULL,
+                start_month TEXT NOT NULL,
+                last_month TEXT,
+                active INTEGER NOT NULL DEFAULT 1,
+                created_by TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS recurring_shares(
+                recurring_id INTEGER NOT NULL REFERENCES recurring(id) ON DELETE CASCADE,
+                user_id TEXT NOT NULL REFERENCES users(id),
+                amount INTEGER NOT NULL,
+                PRIMARY KEY(recurring_id, user_id)
+            );
+            ALTER TABLE expenses ADD COLUMN recurring_id INTEGER REFERENCES recurring(id) ON DELETE SET NULL;
+            ALTER TABLE expenses ADD COLUMN recurring_month TEXT;
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_expenses_recurring
+                ON expenses(recurring_id, recurring_month) WHERE recurring_id IS NOT NULL;
+            """
+        )
+        if not db.execute("SELECT 1 FROM categories WHERE name = 'Vaste lasten'").fetchone():
+            db.execute("INSERT INTO categories(name, icon) VALUES ('Vaste lasten', 'home')")
     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     db.commit()
     db.close()
@@ -166,7 +199,7 @@ def suggest_settlements(bal):
 def expense_rows(db, where, params):
     rows = db.execute(
         f"""SELECT e.id, e.description, e.amount, e.paid_by, e.date, e.category_id,
-                   e.created_by, e.created_at
+                   e.created_by, e.created_at, e.recurring_id
             FROM expenses e WHERE {where} ORDER BY e.date DESC, e.id DESC""",
         params,
     ).fetchall()
@@ -180,6 +213,85 @@ def expense_rows(db, where, params):
         }
         result.append(item)
     return result
+
+
+# ---------------------------------------------------------------- vaste kosten
+
+GEN_LOCK = threading.Lock()
+
+
+def month_add(month, n):
+    y, m = map(int, month.split("-"))
+    m += n
+    y += (m - 1) // 12
+    m = (m - 1) % 12 + 1
+    return f"{y:04d}-{m:02d}"
+
+
+def due_date(month, day):
+    """Dag in de maand, begrensd op de laatste dag (31 = altijd de laatste dag)."""
+    y, m = map(int, month.split("-"))
+    return date(y, m, min(day, calendar.monthrange(y, m)[1]))
+
+
+def recurring_next(row, today=None):
+    today = today or date.today()
+    month = month_add(row["last_month"], 1) if row["last_month"] else row["start_month"]
+    return due_date(month, row["day"])
+
+
+def generate_recurring(db, today=None):
+    """Zet alle vaste kosten die inmiddels aan de beurt zijn als uitgave in de lijst."""
+    today = today or date.today()
+    added = 0
+    with GEN_LOCK:
+        rules = db.execute("SELECT * FROM recurring WHERE active = 1").fetchall()
+        for r in rules:
+            shares = db.execute(
+                "SELECT user_id, amount FROM recurring_shares WHERE recurring_id = ?", (r["id"],)).fetchall()
+            if not shares:
+                continue
+            month = month_add(r["last_month"], 1) if r["last_month"] else r["start_month"]
+            last = r["last_month"]
+            while due_date(month, r["day"]) <= today:
+                cur = db.execute(
+                    "INSERT OR IGNORE INTO expenses(description, amount, paid_by, date, category_id, "
+                    "created_by, recurring_id, recurring_month) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (r["description"], r["amount"], r["paid_by"], due_date(month, r["day"]).isoformat(),
+                     r["category_id"], "vaste-kosten", r["id"], month))
+                if cur.rowcount:
+                    db.executemany(
+                        "INSERT INTO expense_shares(expense_id, user_id, amount) VALUES (?, ?, ?)",
+                        [(cur.lastrowid, s["user_id"], s["amount"]) for s in shares])
+                    added += 1
+                last = month
+                month = month_add(month, 1)
+            if last != r["last_month"]:
+                db.execute("UPDATE recurring SET last_month = ? WHERE id = ?", (last, r["id"]))
+        db.commit()
+    return added
+
+
+def recurring_rows(db):
+    out = []
+    for r in db.execute("SELECT * FROM recurring ORDER BY active DESC, day, id").fetchall():
+        item = {k: r[k] for k in ("id", "description", "amount", "paid_by", "category_id", "day", "active")}
+        item["shares"] = {s["user_id"]: s["amount"] for s in db.execute(
+            "SELECT user_id, amount FROM recurring_shares WHERE recurring_id = ?", (r["id"],))}
+        item["next_date"] = recurring_next(r).isoformat() if r["active"] else None
+        out.append(item)
+    return out
+
+
+def background_generator():
+    while True:
+        time.sleep(1800)
+        try:
+            db = connect()
+            generate_recurring(db)
+            db.close()
+        except Exception as e:  # noqa: BLE001
+            print("Vaste kosten:", repr(e), file=sys.stderr)
 
 
 # ---------------------------------------------------------------- validatie
@@ -214,7 +326,7 @@ def parse_date(value):
     return value
 
 
-def validate_expense(db, body):
+def validate_expense(db, body, with_date=True):
     description = str(body.get("description") or "").strip()
     if not description:
         raise ApiError(400, "Vul een omschrijving in")
@@ -247,7 +359,7 @@ def validate_expense(db, body):
         "description": description,
         "amount": amount,
         "paid_by": paid_by,
-        "date": parse_date(body.get("date")),
+        "date": parse_date(body.get("date")) if with_date else None,
         "category_id": category_id,
         "shares": clean,
     }
@@ -339,6 +451,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         db = connect()
         try:
+            generate_recurring(db)
             me = self.current_user(db)
             qs = parse_qs(url.query)
             status, payload = self.route(db, method, path[len("/api"):], qs, me)
@@ -451,6 +564,64 @@ class Handler(BaseHTTPRequestHandler):
             db.commit()
             return 200, {"ok": True}
 
+        if path == "/recurring" and method == "GET":
+            return 200, {"recurring": recurring_rows(db)}
+
+        if path == "/recurring" and method == "POST":
+            body = self.read_json()
+            data = validate_expense(db, body, with_date=False)
+            day = self.parse_day(body.get("day"))
+            today = date.today()
+            this_month = today.strftime("%Y-%m")
+            if day >= today.day or due_date(this_month, day) >= today or body.get("include_current"):
+                start = this_month
+            else:
+                start = month_add(this_month, 1)
+            cur = db.execute(
+                "INSERT INTO recurring(description, amount, paid_by, category_id, day, start_month, created_by) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (data["description"], data["amount"], data["paid_by"], data["category_id"], day, start, me))
+            rid = cur.lastrowid
+            db.executemany("INSERT INTO recurring_shares(recurring_id, user_id, amount) VALUES (?, ?, ?)",
+                           [(rid, u, c) for u, c in data["shares"].items()])
+            db.commit()
+            generate_recurring(db)
+            return 201, {"id": rid}
+
+        m = re.fullmatch(r"/recurring/(\d+)", path)
+        if m:
+            rid = int(m.group(1))
+            row = db.execute("SELECT * FROM recurring WHERE id = ?", (rid,)).fetchone()
+            if not row:
+                raise ApiError(404, "Vaste uitgave niet gevonden")
+            if method == "PUT":
+                body = self.read_json()
+                if set(body) == {"active"}:
+                    active = 1 if body["active"] else 0
+                    if active and not row["active"]:
+                        # Hervatten: niet alsnog de gemiste maanden toevoegen.
+                        today = date.today()
+                        month = today.strftime("%Y-%m")
+                        last = month if due_date(month, row["day"]) < today else month_add(month, -1)
+                        db.execute("UPDATE recurring SET active = 1, last_month = ? WHERE id = ?", (last, rid))
+                    else:
+                        db.execute("UPDATE recurring SET active = ? WHERE id = ?", (active, rid))
+                    db.commit()
+                    return 200, {"ok": True}
+                data = validate_expense(db, body, with_date=False)
+                day = self.parse_day(body.get("day"))
+                db.execute("UPDATE recurring SET description=?, amount=?, paid_by=?, category_id=?, day=? WHERE id=?",
+                           (data["description"], data["amount"], data["paid_by"], data["category_id"], day, rid))
+                db.execute("DELETE FROM recurring_shares WHERE recurring_id = ?", (rid,))
+                db.executemany("INSERT INTO recurring_shares(recurring_id, user_id, amount) VALUES (?, ?, ?)",
+                               [(rid, u, c) for u, c in data["shares"].items()])
+                db.commit()
+                return 200, {"ok": True}
+            if method == "DELETE":
+                db.execute("DELETE FROM recurring WHERE id = ?", (rid,))
+                db.commit()
+                return 200, {"ok": True}
+
         if path == "/categories" and method == "POST":
             body = self.read_json()
             name = str(body.get("name") or "").strip()[:40]
@@ -477,6 +648,12 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {"id": cid, "name": name, "icon": icon, "archived": archived}
 
         raise ApiError(404, "Niet gevonden")
+
+    @staticmethod
+    def parse_day(value):
+        if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 31:
+            raise ApiError(400, "Kies een dag tussen 1 en 31")
+        return value
 
     def summary(self, db, month):
         total = db.execute(
@@ -532,6 +709,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     init_db()
+    threading.Thread(target=background_generator, daemon=True).start()
     httpd = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"Kostendeler draait op poort {PORT}, database: {DB_PATH}", flush=True)
     httpd.serve_forever()
