@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -39,7 +39,7 @@ DEFAULT_CATEGORIES = [
 EMOJI_TO_ICON = {"🛒": "cart", "🧽": "sparkle", "🧴": "bottle", "🛋️": "sofa", "🛋": "sofa",
                  "🍕": "utensils", "📦": "box"}
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 6
 MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_AMOUNT = 100_000_00  # 100.000 euro in centen
@@ -157,6 +157,36 @@ def init_db():
         )
         # Eerste maandrapport pas op de eerstvolgende 1e, niet direct na installatie.
         kv_set(db, "last_report", month_add(date.today().strftime("%Y-%m"), -1))
+    if version < 5:
+        db.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS tasks(
+                id INTEGER PRIMARY KEY,
+                title TEXT NOT NULL,
+                assigned_to TEXT REFERENCES users(id),
+                due_date TEXT,
+                repeat_unit TEXT,
+                repeat_every INTEGER NOT NULL DEFAULT 1,
+                done INTEGER NOT NULL DEFAULT 0,
+                done_at TEXT,
+                done_by TEXT,
+                created_by TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_tasks_open ON tasks(done, due_date);
+            """
+        )
+    if version < 6:
+        db.executescript(
+            """
+            ALTER TABLE users ADD COLUMN task_reminder INTEGER NOT NULL DEFAULT 1;
+            ALTER TABLE users ADD COLUMN task_reminder_hour INTEGER NOT NULL DEFAULT 8;
+            ALTER TABLE users ADD COLUMN task_assigned INTEGER NOT NULL DEFAULT 1;
+            """
+        )
+        # Niet meteen op de dag van de update een herinnering sturen.
+        for (uid,) in db.execute("SELECT id FROM users").fetchall():
+            kv_set(db, f"task_reminder:{uid}", date.today().isoformat())
     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     db.commit()
     db.close()
@@ -168,7 +198,8 @@ def user_ids(db):
 
 def list_users(db):
     return [dict(r) for r in db.execute(
-        "SELECT id, name, notify_service, monthly_report FROM users ORDER BY created_at, name")]
+        "SELECT id, name, notify_service, monthly_report, task_reminder, task_reminder_hour, task_assigned "
+        "FROM users ORDER BY created_at, name")]
 
 
 def kv_get(db, key):
@@ -305,13 +336,68 @@ def recurring_rows(db):
     return out
 
 
+# ---------------------------------------------------------------- taken
+
+TASK_COLS = ("id, title, assigned_to, due_date, repeat_unit, repeat_every, done, done_at, done_by, "
+             "created_by, created_at")
+REPEAT_UNITS = ("day", "week", "month")
+
+
+def add_months(d, n):
+    y, m = divmod(d.year * 12 + d.month - 1 + n, 12)
+    m += 1
+    return date(y, m, min(d.day, calendar.monthrange(y, m)[1]))
+
+
+def task_step(base, unit, every, n):
+    if unit == "day":
+        return base + timedelta(days=every * n)
+    if unit == "week":
+        return base + timedelta(weeks=every * n)
+    return add_months(base, every * n)
+
+
+def task_next_due(due, unit, every, today):
+    """Eerstvolgende datum ná vandaag. Een taak die je te vroeg afvinkt slaat die beurt over."""
+    base = date.fromisoformat(due) if due else today
+    if (today - base).days > 3650:
+        base = today
+    n = 1
+    nxt = task_step(base, unit, every, n)
+    while nxt <= today:
+        n += 1
+        nxt = task_step(base, unit, every, n)
+    return nxt
+
+
+def sql_now(db):
+    return db.execute("SELECT CURRENT_TIMESTAMP").fetchone()[0]
+
+
+def task_row(db, tid):
+    r = db.execute(f"SELECT {TASK_COLS} FROM tasks WHERE id = ?", (tid,)).fetchone()
+    return dict(r) if r else None
+
+
+def task_lists(db):
+    open_ = [dict(r) for r in db.execute(
+        f"SELECT {TASK_COLS} FROM tasks WHERE done = 0 ORDER BY due_date IS NULL, due_date, id")]
+    done = [dict(r) for r in db.execute(
+        f"SELECT {TASK_COLS} FROM tasks WHERE done = 1 ORDER BY done_at DESC, id DESC LIMIT 30")]
+    return {"open": open_, "done": done}
+
+
 def background_generator():
     while True:
-        time.sleep(900)
+        time.sleep(60)
         try:
             db = connect()
             generate_recurring(db)
             maybe_send_monthly_report(db)
+            maybe_send_task_reminders(db)
+            # Afgevinkte taken ruimen zichzelf na 90 dagen op.
+            db.execute("DELETE FROM tasks WHERE done = 1 AND done_at < datetime('now', '-90 days')")
+            db.commit()
             db.close()
         except Exception as e:  # noqa: BLE001
             print("Achtergrondtaak:", repr(e), file=sys.stderr)
@@ -418,6 +504,103 @@ def maybe_send_monthly_report(db, now=None):
     return sent
 
 
+WEEKDAYS_NL = ["maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag"]
+
+
+def due_phrase(iso, today=None):
+    today = today or date.today()
+    d = date.fromisoformat(iso)
+    diff = (d - today).days
+    if diff == 0:
+        return "vandaag"
+    if diff == 1:
+        return "morgen"
+    if diff < 0:
+        return "al te laat"
+    return f"{WEEKDAYS_NL[d.weekday()]} {d.day} {MONTHS_NL[d.month - 1]}"
+
+
+def due_tasks_for(db, uid, today):
+    """Open taken voor deze persoon (of voor iedereen) die vandaag of eerder aan de beurt zijn."""
+    return [dict(r) for r in db.execute(
+        "SELECT title, due_date FROM tasks WHERE done = 0 AND due_date IS NOT NULL AND due_date <= ? "
+        "AND (assigned_to IS NULL OR assigned_to = ?) ORDER BY due_date, id", (today.isoformat(), uid))]
+
+
+def task_reminder_text(tasks, today):
+    if not tasks:
+        return "Taken", "Niets op de lijst voor vandaag."
+    late = sum(1 for t in tasks if t["due_date"] < today.isoformat())
+    title = "1 taak voor vandaag" if len(tasks) == 1 else f"{len(tasks)} taken voor vandaag"
+    if len(tasks) == 1:
+        return title, tasks[0]["title"] + (" (te laat)" if late else "")
+    names = [t["title"] for t in tasks[:3]]
+    rest = len(tasks) - len(names)
+    listing = ", ".join(names) + f" en nog {rest}" if rest else ", ".join(names[:-1]) + " en " + names[-1]
+    msg = listing + "."
+    if late:
+        msg += " Daarvan " + ("is er 1" if late == 1 else f"zijn er {late}") + " te laat."
+    return title, msg
+
+
+def maybe_send_task_reminders(db, now=None):
+    """Eén keer per dag, vanaf het gekozen uur, de taken van vandaag. Geen taken = geen melding."""
+    now = now or datetime.now()
+    today = now.date()
+    sent = 0
+    for u in list_users(db):
+        if not (u["notify_service"] and u["task_reminder"]) or now.hour < u["task_reminder_hour"]:
+            continue
+        key = f"task_reminder:{u['id']}"
+        if kv_get(db, key) == today.isoformat():
+            continue
+        kv_set(db, key, today.isoformat())
+        db.commit()
+        tasks = due_tasks_for(db, u["id"], today)
+        if not tasks:
+            continue
+        title, msg = task_reminder_text(tasks, today)
+        try:
+            send_notification(u["notify_service"], title, msg)
+            sent += 1
+        except ApiError as e:
+            print(f"Takenherinnering naar {u['name']} mislukt: {e.message}", file=sys.stderr)
+    return sent
+
+
+def _send_quietly(service, title, message):
+    try:
+        send_notification(service, title, message)
+    except Exception as e:  # noqa: BLE001
+        print("Melding mislukt:", getattr(e, "message", repr(e)), file=sys.stderr)
+
+
+def notify_assigned(db, task, me, previous=None):
+    """Melding als iemand anders een taak aan jou toewijst (niet bij jezelf, niet bij 'iedereen')."""
+    target = task["assigned_to"]
+    if not target or target == me or target == previous:
+        return False
+    row = db.execute("SELECT notify_service, task_assigned FROM users WHERE id = ?", (target,)).fetchone()
+    if not row or not row["notify_service"] or not row["task_assigned"]:
+        return False
+    who = db.execute("SELECT name FROM users WHERE id = ?", (me,)).fetchone()
+    msg = f"{who[0] if who else 'Je huisgenoot'}: {task['title']}"
+    if task["due_date"]:
+        msg += f" · {due_phrase(task['due_date'])}"
+    # Op de achtergrond, zodat opslaan niet wacht op Home Assistant.
+    threading.Thread(target=_send_quietly, args=(row["notify_service"], "Nieuwe taak voor jou", msg),
+                     daemon=True).start()
+    return True
+
+
+def sync_reminder_marker(db, uid):
+    """Na het aanzetten of verzetten: niet meteen sturen als het uur vandaag al voorbij is."""
+    row = db.execute("SELECT task_reminder_hour FROM users WHERE id = ?", (uid,)).fetchone()
+    now = datetime.now()
+    if row and now.hour >= row[0]:
+        kv_set(db, f"task_reminder:{uid}", now.date().isoformat())
+
+
 # ---------------------------------------------------------------- validatie
 
 def clean_icon(value, default):
@@ -487,6 +670,42 @@ def validate_expense(db, body, with_date=True):
         "category_id": category_id,
         "shares": clean,
     }
+
+
+def validate_task(db, body):
+    title = str(body.get("title") or "").strip()
+    if not title:
+        raise ApiError(400, "Vul een taak in")
+    if len(title) > 200:
+        raise ApiError(400, "De taak is te lang")
+    assigned = body.get("assigned_to") or None
+    if assigned is not None and not (isinstance(assigned, str) and db.execute(
+            "SELECT 1 FROM users WHERE id = ?", (assigned,)).fetchone()):
+        raise ApiError(400, "Onbekende persoon")
+    due = body.get("due_date") or None
+    if due is not None:
+        due = parse_date(due)
+    unit = body.get("repeat_unit") or None
+    every = body.get("repeat_every", 1)
+    if unit is not None:
+        if unit not in REPEAT_UNITS or isinstance(every, bool) or not isinstance(every, int) or not 1 <= every <= 52:
+            raise ApiError(400, "Ongeldige herhaling")
+        if due is None:
+            due = date.today().isoformat()
+    else:
+        every = 1
+    return {"title": title, "assigned_to": assigned, "due_date": due, "repeat_unit": unit, "repeat_every": every}
+
+
+def clean_done(db, body):
+    """done_at / done_by uit een 'ongedaan maken'-verzoek."""
+    at = body.get("done_at")
+    if at is not None and (not isinstance(at, str) or len(at) > 32):
+        raise ApiError(400, "Ongeldige tijd")
+    by = body.get("done_by")
+    if not (isinstance(by, str) and db.execute("SELECT 1 FROM users WHERE id = ?", (by,)).fetchone()):
+        by = None
+    return at, by
 
 
 # ---------------------------------------------------------------- HTTP
@@ -740,6 +959,17 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute("UPDATE users SET notify_service = ? WHERE id = ?", (svc, me))
             if "monthly_report" in body:
                 db.execute("UPDATE users SET monthly_report = ? WHERE id = ?", (1 if body["monthly_report"] else 0, me))
+            if "task_reminder" in body:
+                db.execute("UPDATE users SET task_reminder = ? WHERE id = ?", (1 if body["task_reminder"] else 0, me))
+            if "task_reminder_hour" in body:
+                hour = body["task_reminder_hour"]
+                if isinstance(hour, bool) or not isinstance(hour, int) or not 0 <= hour <= 23:
+                    raise ApiError(400, "Kies een uur tussen 0 en 23")
+                db.execute("UPDATE users SET task_reminder_hour = ? WHERE id = ?", (hour, me))
+            if "task_assigned" in body:
+                db.execute("UPDATE users SET task_assigned = ? WHERE id = ?", (1 if body["task_assigned"] else 0, me))
+            if {"notify_service", "task_reminder", "task_reminder_hour"} & set(body):
+                sync_reminder_marker(db, me)
             db.commit()
             return 200, {"ok": True}
 
@@ -749,10 +979,14 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {"available": True, "services": notify_services()}
 
         if path == "/notify/test" and method == "POST":
+            body = self.read_json()
             row = db.execute("SELECT notify_service FROM users WHERE id = ?", (me,)).fetchone()
             if not row or not row["notify_service"]:
                 raise ApiError(400, "Kies eerst waar meldingen heen moeten")
-            title, msg = report_text(db, me, month_add(date.today().strftime("%Y-%m"), -1))
+            if body.get("kind") == "tasks":
+                title, msg = task_reminder_text(due_tasks_for(db, me, date.today()), date.today())
+            else:
+                title, msg = report_text(db, me, month_add(date.today().strftime("%Y-%m"), -1))
             send_notification(row["notify_service"], "Testmelding · " + title, msg)
             return 200, {"ok": True}
 
@@ -813,6 +1047,93 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute("DELETE FROM recurring WHERE id = ?", (rid,))
                 db.commit()
                 return 200, {"ok": True}
+
+        if path == "/tasks" and method == "GET":
+            return 200, task_lists(db)
+
+        if path == "/tasks" and method == "POST":
+            data = validate_task(db, self.read_json())
+            cur = db.execute(
+                "INSERT INTO tasks(title, assigned_to, due_date, repeat_unit, repeat_every, created_by) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (data["title"], data["assigned_to"], data["due_date"], data["repeat_unit"], data["repeat_every"], me))
+            db.commit()
+            task = task_row(db, cur.lastrowid)
+            notify_assigned(db, task, me)
+            return 201, task
+
+        if path == "/tasks/restore" and method == "POST":
+            body = self.read_json()
+            data = validate_task(db, body)
+            tid = body.get("id")
+            if not isinstance(tid, int) or isinstance(tid, bool) or task_row(db, tid):
+                tid = None
+            done = 1 if body.get("done") else 0
+            done_at, done_by = clean_done(db, body)
+            created_at = body.get("created_at")
+            if not isinstance(created_at, str) or len(created_at) > 32:
+                created_at = None
+            created_by = body.get("created_by") if isinstance(body.get("created_by"), str) else me
+            cur = db.execute(
+                "INSERT INTO tasks(id, title, assigned_to, due_date, repeat_unit, repeat_every, done, done_at, "
+                "done_by, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))",
+                (tid, data["title"], data["assigned_to"], data["due_date"], data["repeat_unit"], data["repeat_every"],
+                 done, done_at, done_by, created_by, created_at))
+            db.commit()
+            return 201, {"id": cur.lastrowid}
+
+        m = re.fullmatch(r"/tasks/(\d+)/(complete|reopen)", path)
+        if m and method == "POST":
+            tid = int(m.group(1))
+            row = task_row(db, tid)
+            if not row:
+                raise ApiError(404, "Taak niet gevonden")
+            if m.group(2) == "reopen":
+                db.execute("UPDATE tasks SET done = 0, done_at = NULL, done_by = NULL WHERE id = ?", (tid,))
+            elif not row["done"]:
+                body = self.read_json()
+                today = date.fromisoformat(parse_date(body["today"])) if body.get("today") else date.today()
+                if row["repeat_unit"]:
+                    # Terugkerende taak: blijft open, met de eerstvolgende datum.
+                    nxt = task_next_due(row["due_date"], row["repeat_unit"], row["repeat_every"], today)
+                    db.execute("UPDATE tasks SET due_date = ?, done_at = ?, done_by = ? WHERE id = ?",
+                               (nxt.isoformat(), sql_now(db), me, tid))
+                else:
+                    db.execute("UPDATE tasks SET done = 1, done_at = ?, done_by = ? WHERE id = ?",
+                               (sql_now(db), me, tid))
+            db.commit()
+            return 200, {"task": task_row(db, tid), "previous": row}
+
+        m = re.fullmatch(r"/tasks/(\d+)", path)
+        if m:
+            tid = int(m.group(1))
+            row = task_row(db, tid)
+            if not row:
+                raise ApiError(404, "Taak niet gevonden")
+            if method == "PUT":
+                body = self.read_json()
+                data = validate_task(db, body)
+                done, done_at, done_by = row["done"], row["done_at"], row["done_by"]
+                if "done" in body:
+                    done = 1 if body["done"] else 0
+                    if "done_at" in body or "done_by" in body:
+                        done_at, done_by = clean_done(db, body)
+                    elif done != row["done"]:
+                        done_at, done_by = (sql_now(db), me) if done else (None, None)
+                db.execute(
+                    "UPDATE tasks SET title=?, assigned_to=?, due_date=?, repeat_unit=?, repeat_every=?, "
+                    "done=?, done_at=?, done_by=? WHERE id=?",
+                    (data["title"], data["assigned_to"], data["due_date"], data["repeat_unit"], data["repeat_every"],
+                     done, done_at, done_by, tid))
+                db.commit()
+                task = task_row(db, tid)
+                if not task["done"]:
+                    notify_assigned(db, task, me, previous=row["assigned_to"])
+                return 200, task
+            if method == "DELETE":
+                db.execute("DELETE FROM tasks WHERE id = ?", (tid,))
+                db.commit()
+                return 200, {"ok": True, "deleted": row}
 
         if path == "/categories" and method == "POST":
             body = self.read_json()

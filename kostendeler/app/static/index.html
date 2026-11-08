@@ -155,6 +155,46 @@
     background: var(--plus-bg); color: var(--plus-fg);
     box-shadow: 0 10px 26px rgba(60, 66, 78, .28); }
   nav.tabs .plus svg { width: 24px; height: 24px; stroke-width: 2.2; }
+  /* Vier tabbladen + plusknop: op smalle telefoons iets compacter, op de smalste alleen iconen. */
+  @media (max-width: 440px) {
+    nav.tabs { gap: 6px; padding: 0 8px; }
+    nav.tabs .tab, nav.tabs .plus { height: 52px; }
+    nav.tabs .tab { padding: 0 12px; }
+    nav.tabs .tab.active { padding: 0 14px 0 12px; gap: 6px; }
+    nav.tabs .tab span { font-size: 14px; }
+    nav.tabs .plus { width: 54px; height: 54px; }
+  }
+  @media (max-width: 374px) {
+    nav.tabs .tab.active { padding: 0 12px; gap: 0; }
+    nav.tabs .tab.active span { max-width: 0; opacity: 0; }
+  }
+
+  /* taken */
+  .quickadd { display: flex; gap: 10px; margin-bottom: 4px; }
+  .quickadd .input { flex: 1; min-width: 0; border-radius: 999px; padding: 14px 20px; background: var(--surface); }
+  .quickadd .btn { width: 50px; height: 50px; flex: 0 0 50px; padding: 0; display: grid; place-items: center; }
+  .quickadd .btn .ci { width: 20px; height: 20px; stroke-width: 2.2; }
+  .day.late { color: var(--minus); }
+  .task { display: flex; align-items: center; gap: 2px; padding: 0 15px 0 4px; border-top: 1px solid var(--line); transition: opacity .3s, background-color .2s; }
+  .task:first-child { border-top: 0; }
+  .tcheck { width: 46px; height: 56px; flex: 0 0 46px; border: 0; background: none; display: grid; place-items: center; padding: 0; }
+  .tcheck .check { transition: background-color .2s, border-color .2s, color .2s, box-shadow .2s; }
+  .tmain { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 12px 0; display: block; }
+  .tmain:active:not(:disabled) { transform: scale(.99); }
+  .task .title { display: block; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; transition: color .2s; }
+  .task .meta { display: flex; flex-wrap: wrap; gap: 0 12px; margin-top: 2px; color: var(--muted); font-size: 13px; }
+  .task .meta span { display: inline-flex; align-items: center; }
+  .task .meta .ci { width: 13px; height: 13px; margin-right: 4px; stroke-width: 1.8; }
+  .task .meta .late { color: var(--minus); }
+  .tav { width: 30px; height: 30px; flex: 0 0 30px; margin-left: 8px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 500;
+    background: var(--surface); border: 1px solid var(--field-border); color: var(--strong); }
+  .task.is-done .title { text-decoration: line-through; color: var(--muted); font-weight: 400; }
+  .task.finishing { opacity: .55; }
+  .task.finishing .title { text-decoration: line-through; color: var(--muted); }
+  .task.finishing .check { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px rgba(30, 34, 39, .25); }
+  .task.fresh { animation: flash 1.4s ease-out .2s both; }
+  .donetoggle { display: block; margin: 16px auto 0; }
+  #taskdone .list { margin-top: 12px; }
 
   /* sheets */
   .overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -179,6 +219,7 @@
   .split-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
   .split-row .who { flex: 1; }
   .split-row input { width: 116px; text-align: right; }
+  .split-row select.hoursel { width: auto; flex: 0 0 auto; padding: 9px 36px 9px 14px; border-radius: 999px; font-size: 14px; }
   .check { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--check-border); display: grid; place-items: center; font-size: 13px; color: transparent; background: var(--check-bg); padding: 0; }
   .check.on { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px rgba(30, 34, 39, .25); }
   .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
@@ -324,7 +365,8 @@
     .cols { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
   }
   @media (hover: hover) {
-    .item:hover, .settings-item:hover { background: rgba(30, 34, 39, .035); }
+    .item:hover, .settings-item:hover, .task:hover { background: rgba(30, 34, 39, .035); }
+    .tcheck:hover .check:not(.on) { color: var(--faint); }
     .wide:hover, .btn:not(.primary):hover, .chip:not(.on):hover, .icon-pick:not(.on):hover, .iconbtn:hover:not(:disabled) { background: var(--surface-hi); }
     nav.tabs .tab:not(.active):hover { background: rgba(255, 255, 255, .6); }
     .btn.primary:hover, nav.tabs .plus:hover { filter: brightness(1.12); }
@@ -356,7 +398,7 @@
     .bar { background: rgba(255, 255, 255, .07); }
     .grip { background: rgba(255, 255, 255, .18); }
     .wide { box-shadow: none; }
-    .item:active, .item:hover, .settings-item:hover { background: rgba(255, 255, 255, .04); }
+    .item:active, .item:hover, .settings-item:hover, .task:hover { background: rgba(255, 255, 255, .04); }
     select.input { background-image: linear-gradient(45deg, transparent 50%, #9aa0a8 50%), linear-gradient(135deg, #9aa0a8 50%, transparent 50%); }
     .linkbtn { text-decoration-color: rgba(255, 255, 255, .3); }
     .ico { filter: saturate(1.1); }
@@ -370,6 +412,7 @@
 <nav class="tabs hidden" id="tabs">
   <div class="brand"><span class="brand-mark">€</span>Kostendeler</div>
   <button class="tab active" data-tab="home" aria-label="Overzicht"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/></svg><span>Overzicht</span></button>
+  <button class="tab" data-tab="tasks" aria-label="Taken"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/></svg><span>Taken</span></button>
   <button class="tab" data-tab="stats" aria-label="Cijfers"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-6M20 19V9"/></svg><span>Cijfers</span></button>
   <button class="plus" id="fab" aria-label="Uitgave toevoegen"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg><span>Nieuwe uitgave</span></button>
   <button class="tab" data-tab="settings" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Instellingen</span></button>
@@ -438,6 +481,7 @@ const S = {
   me: null, ingress: true, users: [], categories: [],
   tab: "home", month: thisMonth(), counts: {}, firstPaint: true, animate: true, fresh: null, recurring: [], statsMode: "month", year: new Date().getFullYear(), ysummary: null, notify: undefined,
   balances: {}, suggestions: [], activity: { expenses: [], settlements: [] }, summary: null,
+  tasks: { open: [], done: [] }, taskFilter: store.get("kostendeler-taskfilter") === "mine" ? "mine" : "all", showDone: false,
 };
 
 async function api(method, path, body) {
@@ -513,9 +557,9 @@ async function boot() {
 }
 
 async function refresh() {
-  const [b, a, s, r] = await Promise.all([
-    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month), api("GET", "/recurring")]);
-  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s; S.recurring = r.recurring;
+  const [b, a, s, r, t] = await Promise.all([
+    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month), api("GET", "/recurring"), api("GET", "/tasks")]);
+  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s; S.recurring = r.recurring; S.tasks = t;
   if (S.tab === "stats" && S.statsMode === "year") S.ysummary = await api("GET", "/summary?year=" + S.year);
   render();
 }
@@ -528,13 +572,28 @@ async function reloadMeta() {
 }
 
 // ------------------------------------------------------------ renderen
-const syncTabs = () => document.querySelectorAll("nav.tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.tab === S.tab));
+function syncTabs() {
+  document.querySelectorAll("nav.tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.tab === S.tab));
+  // De plusknop voegt toe wat bij het tabblad past.
+  const fab = document.getElementById("fab"), label = S.tab === "tasks" ? "Nieuwe taak" : "Nieuwe uitgave";
+  fab.setAttribute("aria-label", label); fab.querySelector("span").textContent = label;
+}
 function render() {
   syncTabs();
   const app = document.getElementById("app");
+  // Taken: alleen de lijst verversen, zodat het invoerveld zijn focus (en het toetsenbord) houdt.
+  if (S.tab === "tasks" && app.dataset.view === "tasks" && !S.animate && document.getElementById("tasklist")) {
+    document.getElementById("tasklist").innerHTML = renderTaskList();
+    document.getElementById("taskdone").innerHTML = renderTaskDone();
+    document.getElementById("taskseg").innerHTML = taskSegInner();
+    S.fresh = null;
+    return;
+  }
   if (S.tab === "home") app.innerHTML = renderHome();
+  else if (S.tab === "tasks") app.innerHTML = renderTasks();
   else if (S.tab === "stats") app.innerHTML = renderStats();
   else app.innerHTML = renderSettings();
+  app.dataset.view = S.tab;
   app.classList.remove("enter");
   if (S.animate) {
     void app.offsetWidth; // herstart animaties
@@ -674,6 +733,187 @@ function renderHome() {
   return header + `<div class="cols"><div class="col col-side">${renderHero()}${renderTiles()}</div><div class="col">${monthNav()}${list}</div></div>`;
 }
 
+// ------------------------------------------------------------ taken
+const REPEAT_WORDS = { day: ["dag", "dagen"], week: ["week", "weken"], month: ["maand", "maanden"] };
+const REPEAT_OPTS = [["", "Niet herhalen"], ["day:1", "Elke dag"], ["week:1", "Elke week"], ["week:2", "Elke 2 weken"], ["month:1", "Elke maand"]];
+const PLUS_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>';
+const findTask = id => [...S.tasks.open, ...S.tasks.done].find(t => t.id === id);
+const addDaysISO = n => { const d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+
+function repeatText(t) {
+  const w = REPEAT_WORDS[t.repeat_unit];
+  if (!w) return "";
+  return t.repeat_every === 1 ? "elke " + w[0] : `elke ${t.repeat_every} ${w[1]}`;
+}
+function taskDue(iso) {
+  const d = new Date(iso + "T00:00");
+  const diff = Math.round((d - new Date(todayISO() + "T00:00")) / 864e5);
+  if (diff === 0) return "Vandaag";
+  if (diff === 1) return "Morgen";
+  if (diff === -1) return "Gisteren";
+  if (diff > 1 && diff < 7) return cap(d.toLocaleDateString("nl-NL", { weekday: "long" }));
+  return d.toLocaleDateString("nl-NL", { day: "numeric", month: "short", ...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }).replace(".", "");
+}
+// done_at komt als UTC-tijd uit de database.
+function doneWhen(ts) {
+  const d = new Date(String(ts).replace(" ", "T") + "Z");
+  if (isNaN(d)) return "";
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return dayLabel(d.toISOString().slice(0, 10));
+}
+
+function visibleTasks() {
+  const keep = t => S.taskFilter !== "mine" || !t.assigned_to || t.assigned_to === S.me;
+  return { open: S.tasks.open.filter(keep), done: S.tasks.done.filter(keep) };
+}
+
+function taskRow(t, isDone) {
+  const late = !isDone && t.due_date && t.due_date < todayISO();
+  const bits = [];
+  if (isDone) {
+    if (t.done_at) bits.push(`<span>${esc(nameOf(t.done_by, true))} · ${esc(doneWhen(t.done_at))}</span>`);
+  } else {
+    if (t.due_date) bits.push(`<span class="${late ? "late" : ""}">${esc(taskDue(t.due_date))}</span>`);
+    if (t.repeat_unit) bits.push(`<span>${REPEAT_ICON.replace(' rep"', '"')}${esc(repeatText(t))}</span>`);
+    if (t.repeat_unit && t.done_by) bits.push(`<span>laatst door ${esc(nameObj(t.done_by))}</span>`);
+  }
+  const who = t.assigned_to ? `<span class="tav" title="${esc(nameOf(t.assigned_to, true))}">${esc(initials(user(t.assigned_to)?.name))}</span>` : "";
+  return `<div class="task ${isDone ? "is-done" : ""} ${S.fresh === "t" + t.id ? "fresh" : ""}">
+    <button class="tcheck" data-act="${isDone ? "task-reopen" : "task-done"}" data-id="${t.id}" aria-label="${isDone ? "Weer openen" : "Afvinken"}"><span class="check ${isDone ? "on" : ""}">${CHECK_ICON}</span></button>
+    <button class="tmain" data-act="edit-task" data-id="${t.id}"><span class="title">${esc(t.title)}</span>${bits.length ? `<span class="meta">${bits.join("")}</span>` : ""}</button>${who}</div>`;
+}
+
+function renderTaskList() {
+  const { open } = visibleTasks();
+  const today = todayISO();
+  const hasDates = open.some(t => t.due_date);
+  const groups = [
+    ["Te laat", open.filter(t => t.due_date && t.due_date < today), "late"],
+    ["Vandaag", open.filter(t => t.due_date === today), ""],
+    ["Binnenkort", open.filter(t => t.due_date && t.due_date > today), ""],
+    [hasDates ? "Zonder datum" : "Open", open.filter(t => !t.due_date), ""],
+  ].filter(g => g[1].length);
+  if (!groups.length) {
+    const text = !S.tasks.open.length ? "Nog geen taken." : "Niets voor jou te doen.";
+    return `<div class="list"><div class="empty">${text}<br>Typ hierboven een taak of tik op <b>+</b>.</div></div>`;
+  }
+  return groups.map(([label, items, cls]) =>
+    `<div class="day ${cls}">${label}</div><div class="list">${items.map(t => taskRow(t, false)).join("")}</div>`).join("");
+}
+
+function renderTaskDone() {
+  const { done } = visibleTasks();
+  if (!done.length) return "";
+  return `<button class="linkbtn donetoggle" data-act="toggle-done">${S.showDone ? "Verberg" : "Toon"} afgerond (${done.length})</button>` +
+    (S.showDone ? `<div class="list">${done.map(t => taskRow(t, true)).join("")}</div>` : "");
+}
+
+const taskSegInner = () => ["all", "mine"].map(f =>
+  `<button data-act="task-filter" data-f="${f}" class="${S.taskFilter === f ? "on" : ""}">${f === "all" ? "Alles" : "Mijn"}</button>`).join("");
+
+function renderTasks() {
+  return `<header class="hello"><div class="txt"><div class="date">Kostendeler</div><h1>Taken</h1></div>
+      <div class="seg" id="taskseg">${taskSegInner()}</div></header>
+    <div class="cols"><div class="col">
+      <form class="quickadd" id="qa" autocomplete="off"><input class="input" id="qa-input" placeholder="Nieuwe taak…" maxlength="200" enterkeyhint="done" aria-label="Nieuwe taak">
+        <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
+      <div id="tasklist">${renderTaskList()}</div></div>
+    <div class="col"><div id="taskdone">${renderTaskDone()}</div></div></div>`;
+}
+
+async function completeTask(id, row) {
+  if (!row || row.classList.contains("finishing")) return;
+  row.classList.add("finishing"); buzz();
+  try {
+    // Het vinkje krijgt even de tijd om te laten zien dat het gelukt is.
+    const [r] = await Promise.all([api("POST", `/tasks/${id}/complete`, { today: todayISO() }),
+      new Promise(res => setTimeout(res, reduceMotion() ? 0 : 420))]);
+    await refresh();
+    const msg = r.task.repeat_unit ? `Klaar, volgende keer ${taskDue(r.task.due_date).toLowerCase()}` : "Afgevinkt";
+    toast(msg, { label: "Ongedaan maken", fn: async () => {
+      try { await api("PUT", "/tasks/" + id, { ...r.previous, done: false }); buzz(); await refresh(); toast("Teruggezet"); }
+      catch (err) { toast(err.message); }
+    } });
+  } catch (err) { row.classList.remove("finishing"); toast(err.message); }
+}
+
+async function reopenTask(id) {
+  try { await api("POST", `/tasks/${id}/reopen`); buzz(); await refresh(); toast("Weer open"); }
+  catch (err) { toast(err.message); }
+}
+
+function taskSheet(existing) {
+  const T = existing
+    ? { id: existing.id, who: existing.assigned_to, rep: existing.repeat_unit ? `${existing.repeat_unit}:${existing.repeat_every}` : "" }
+    : { id: null, who: null, rep: "" };
+  const repOpts = [...REPEAT_OPTS];
+  if (T.rep && !repOpts.some(o => o[0] === T.rep)) repOpts.push([T.rep, cap(repeatText(existing))]);
+  openSheet(`
+    <h3>${existing ? "Taak bewerken" : "Nieuwe taak"}</h3>
+    <div class="field"><label for="t-title">Wat moet er gebeuren?</label>
+      <input class="input" id="t-title" maxlength="200" placeholder="Bijv. Vuilnisbak buiten zetten" value="${esc(existing?.title || "")}"></div>
+    <div class="field"><span class="label">Voor wie</span><div class="chips" id="t-who"></div></div>
+    <div class="field"><label for="t-due">Deadline</label>
+      <input class="input" type="date" id="t-due" value="${esc(existing?.due_date || "")}">
+      <div class="chips" id="t-quick" style="margin-top:10px"></div></div>
+    <div class="field"><label for="t-rep">Herhalen</label>
+      <select class="input" id="t-rep">${repOpts.map(([v, l]) => `<option value="${v}" ${v === T.rep ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
+      <div class="hint" id="t-rephint"></div></div>
+    <button class="btn primary block" id="t-save">Opslaan</button>
+    ${existing ? `<div class="row-actions">${existing.done ? "" : `<button class="btn" id="t-exp">Uitgave van maken</button>`}<button class="btn danger" id="t-del">Verwijderen</button></div>` : ""}
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const popSel = sel => { const el = sheet.querySelector(sel); if (el) el.classList.add("pop"); };
+    const drawWho = () => $("#t-who").innerHTML = [`<button class="chip ${T.who == null ? "on" : ""}" data-u="">Iedereen</button>`,
+      ...S.users.map(u => `<button class="chip ${T.who === u.id ? "on" : ""}" data-u="${esc(u.id)}">${esc(nameOf(u.id, true))}</button>`)].join("");
+    const drawQuick = () => $("#t-quick").innerHTML = [["Vandaag", todayISO()], ["Morgen", addDaysISO(1)], ["Geen datum", ""]].map(([l, v]) =>
+      `<button class="chip ${$("#t-due").value === v ? "on" : ""}" data-d="${v}">${l}</button>`).join("");
+    const sync = () => {
+      $("#t-save").disabled = !$("#t-title").value.trim();
+      $("#t-rephint").textContent = $("#t-rep").value ? "Vink je de taak af, dan komt hij vanzelf terug op de eerstvolgende datum." : "";
+    };
+    drawWho(); drawQuick(); sync();
+    if (!existing) setTimeout(() => $("#t-title").focus(), 250);
+
+    $("#t-title").addEventListener("input", sync);
+    $("#t-title").addEventListener("keydown", e => { if (e.key === "Enter" && !$("#t-save").disabled) $("#t-save").click(); });
+    $("#t-who").addEventListener("click", e => {
+      const b = e.target.closest("[data-u]"); if (!b) return;
+      T.who = b.dataset.u || null; drawWho(); popSel(`#t-who [data-u="${CSS.escape(b.dataset.u)}"]`);
+    });
+    $("#t-quick").addEventListener("click", e => {
+      const b = e.target.closest("[data-d]"); if (!b) return;
+      $("#t-due").value = b.dataset.d;
+      if (!b.dataset.d) $("#t-rep").value = ""; // herhalen heeft een datum nodig
+      drawQuick(); sync(); popSel(`#t-quick [data-d="${b.dataset.d}"]`);
+    });
+    $("#t-due").addEventListener("change", () => { if (!$("#t-due").value) $("#t-rep").value = ""; drawQuick(); sync(); });
+    $("#t-rep").addEventListener("change", () => {
+      if ($("#t-rep").value && !$("#t-due").value) $("#t-due").value = todayISO();
+      drawQuick(); sync();
+    });
+
+    $("#t-save").addEventListener("click", async () => {
+      const [unit, every] = $("#t-rep").value ? $("#t-rep").value.split(":") : [null, 1];
+      const body = { title: $("#t-title").value.trim(), assigned_to: T.who, due_date: $("#t-due").value || null,
+        repeat_unit: unit, repeat_every: Number(every) };
+      $("#t-save").disabled = true;
+      try {
+        const saved = T.id ? await api("PUT", "/tasks/" + T.id, body) : await api("POST", "/tasks", body);
+        S.fresh = "t" + saved.id; buzz(); closeSheet(); toast(T.id ? "Bijgewerkt" : "Toegevoegd"); await refresh();
+      } catch (err) { toast(err.message); $("#t-save").disabled = false; }
+    });
+    existing && $("#t-exp") && $("#t-exp").addEventListener("click", () =>
+      expenseSheet(null, false, { description: existing.title, taskId: existing.id }));
+    existing && $("#t-del").addEventListener("click", async () => {
+      try {
+        const r = await api("DELETE", "/tasks/" + T.id); buzz(); closeSheet(); await refresh();
+        undoToast(`${existing.title} verwijderd`, "/tasks/restore", r.deleted, "t");
+      } catch (err) { toast(err.message); }
+    });
+  });
+}
+
 function lineChart(hist) {
   const W = 320, H = 130, pad = 8;
   const max = Math.max(1, ...hist.map(h => h.total));
@@ -791,7 +1031,13 @@ function renderSettings() {
         `<option value="${esc(o)}" ${o === meU.notify_service ? "selected" : ""}>${esc(prettySvc(o))}</option>`).join("")}</select></div>
       ${meU.notify_service ? `<div class="split-row"><button class="check ${meU.monthly_report ? "on" : ""}" data-act="n-report" aria-label="Maandrapport">${CHECK_ICON}</button>
         <span class="who">Maandrapport op de 1e<span class="two muted" style="display:block;font-size:12px">Totaal, grootste kostenpost en openstaand saldo</span></span></div>
-      <button class="btn" data-act="n-test" style="margin-top:8px">Testmelding sturen</button>` : ""}
+      <div class="split-row"><button class="check ${meU.task_reminder ? "on" : ""}" data-act="n-tasks" aria-label="Takenherinnering">${CHECK_ICON}</button>
+        <span class="who">Taken van vandaag<span class="two muted" style="display:block;font-size:12px">Alleen als er iets op de lijst staat</span></span>
+        ${meU.task_reminder ? `<select class="input hoursel" id="n-hour" aria-label="Tijdstip">${Array.from({ length: 24 }, (_, h) =>
+          `<option value="${h}" ${h === meU.task_reminder_hour ? "selected" : ""}>${String(h).padStart(2, "0")}:00</option>`).join("")}</select>` : ""}</div>
+      <div class="split-row"><button class="check ${meU.task_assigned ? "on" : ""}" data-act="n-assigned" aria-label="Nieuwe taak voor jou">${CHECK_ICON}</button>
+        <span class="who">Nieuwe taak voor jou<span class="two muted" style="display:block;font-size:12px">Als iemand anders een taak aan jou geeft</span></span></div>
+      <div class="row-actions"><button class="btn" data-act="n-test" data-kind="report">Test rapport</button><button class="btn" data-act="n-test" data-kind="tasks">Test taken</button></div>` : ""}
       <div class="hint">${opts.length ? "Ieder kiest dit voor zijn of haar eigen account." : "Geen apparaten gevonden. Installeer de Home Assistant Companion-app en log in."}</div>`;
   }
   return `
@@ -824,15 +1070,17 @@ function closeSheet() {
 }
 
 // ---- uitgave toevoegen / bewerken
-function expenseSheet(existing, recurring = false) {
+function expenseSheet(existing, recurring = false, prefill = null) {
   const activeCats = S.categories.filter(c => !c.archived || c.id === existing?.category_id);
   const fixedCat = S.categories.find(c => c.name === "Vaste lasten" && !c.archived);
+  // Vanuit een taak (bijv. boodschappen): omschrijving alvast ingevuld, taak wordt na opslaan afgevinkt.
+  const defaultCat = recurring && fixedCat ? fixedCat : (prefill && activeCats.find(c => c.name === "Boodschappen")) || activeCats[0];
   const F = existing ? {
     id: existing.id, amount: centsToInput(existing.amount), description: existing.description,
     category_id: existing.category_id, paid_by: existing.paid_by, date: existing.date,
     who: new Set(Object.keys(existing.shares)), custom: false, customVals: {},
   } : {
-    id: null, amount: "", description: "", category_id: (recurring && fixedCat ? fixedCat.id : activeCats[0]?.id) ?? null,
+    id: null, amount: "", description: prefill?.description || "", category_id: defaultCat?.id ?? null,
     paid_by: S.me, date: todayISO(), who: new Set(S.users.map(u => u.id)), custom: false, customVals: {},
   };
   F.day = existing?.day ?? Math.min(new Date().getDate(), 28);
@@ -968,7 +1216,11 @@ function expenseSheet(existing, recurring = false) {
       try {
         const saved = F.id ? await api("PUT", "/expenses/" + F.id, body) : await api("POST", "/expenses", body);
         S.fresh = "e" + saved.id; buzz();
-        closeSheet(); S.month = body.date.slice(0, 7); toast(F.id ? "Bijgewerkt" : "Toegevoegd"); await refresh();
+        let msg = F.id ? "Bijgewerkt" : "Toegevoegd";
+        if (prefill?.taskId) {
+          try { await api("POST", `/tasks/${prefill.taskId}/complete`, { today: todayISO() }); msg = "Toegevoegd en afgevinkt"; } catch {}
+        }
+        closeSheet(); S.month = body.date.slice(0, 7); toast(msg); await refresh();
       } catch (err) { toast(err.message); $("#f-save").disabled = false; }
     });
     existing && $("#f-del").addEventListener("click", async () => {
@@ -1089,7 +1341,7 @@ function showWhoAmI() {
 }
 
 // ------------------------------------------------------------ events
-document.getElementById("fab").addEventListener("click", () => expenseSheet(null));
+document.getElementById("fab").addEventListener("click", () => S.tab === "tasks" ? taskSheet(null) : expenseSheet(null));
 document.getElementById("tabs").addEventListener("click", async e => {
   const b = e.target.closest("[data-tab]"); if (!b) return;
   if (S.tab === b.dataset.tab) return;
@@ -1111,16 +1363,40 @@ document.getElementById("app").addEventListener("click", async e => {
   else if (act === "prev-year" || act === "next-year") { S.year += act === "prev-year" ? -1 : 1; S.animate = true; refresh().catch(err => toast(err.message)); }
   else if (act === "goto-month-from-year") { S.statsMode = "month"; S.month = b.dataset.m; S.animate = true; refresh().catch(err => toast(err.message)); }
   else if (act === "n-report") saveMe({ monthly_report: !(user(S.me)?.monthly_report) }, "Opgeslagen");
+  else if (act === "n-tasks") saveMe({ task_reminder: !(user(S.me)?.task_reminder) }, user(S.me)?.task_reminder ? "Takenherinnering uit" : "Takenherinnering aan");
+  else if (act === "n-assigned") saveMe({ task_assigned: !(user(S.me)?.task_assigned) }, "Opgeslagen");
   else if (act === "n-test") {
     b.disabled = true;
-    api("POST", "/notify/test").then(() => toast("Testmelding verstuurd")).catch(err => toast(err.message)).finally(() => (b.disabled = false));
+    api("POST", "/notify/test", { kind: b.dataset.kind }).then(() => toast("Testmelding verstuurd")).catch(err => toast(err.message)).finally(() => (b.disabled = false));
   }
   else if (act === "add-rec") expenseSheet(null, true);
   else if (act === "edit-rec") expenseSheet(S.recurring.find(x => x.id === Number(b.dataset.id)), true);
   else if (act === "switch-user") { store.del("kostendeler-user"); S.me = null; boot(); }
+  else if (act === "task-done") completeTask(Number(b.dataset.id), b.closest(".task"));
+  else if (act === "task-reopen") reopenTask(Number(b.dataset.id));
+  else if (act === "edit-task") { const t = findTask(Number(b.dataset.id)); t && taskSheet(t); }
+  else if (act === "toggle-done") { S.showDone = !S.showDone; render(); }
+  else if (act === "task-filter") {
+    if (S.taskFilter === b.dataset.f) return;
+    S.taskFilter = b.dataset.f; store.set("kostendeler-taskfilter", S.taskFilter); render();
+  }
+});
+// Snel een taak erbij: typ en druk op enter, het invoerveld blijft open voor de volgende.
+document.getElementById("app").addEventListener("submit", async e => {
+  if (e.target.id !== "qa") return;
+  e.preventDefault();
+  const input = document.getElementById("qa-input"), title = input.value.trim();
+  if (!title || S.qaBusy) return;
+  S.qaBusy = true;
+  try {
+    const t = await api("POST", "/tasks", { title });
+    input.value = ""; S.fresh = "t" + t.id; buzz(); await refresh();
+  } catch (err) { toast(err.message); }
+  finally { S.qaBusy = false; }
 });
 document.getElementById("app").addEventListener("change", e => {
-  if (e.target.id === "n-svc") saveMe({ notify_service: e.target.value || null }, e.target.value ? "Meldingen gaan naar " + prettySvc(e.target.value) : "Meldingen uit");
+  if (e.target.id === "n-hour") saveMe({ task_reminder_hour: Number(e.target.value) }, `Elke dag om ${e.target.options[e.target.selectedIndex].text}`);
+  else if (e.target.id === "n-svc") saveMe({ notify_service: e.target.value || null }, e.target.value ? "Meldingen gaan naar " + prettySvc(e.target.value) : "Meldingen uit");
 });
 async function saveMe(patch, msg) {
   try {
