@@ -196,6 +196,42 @@
   .donetoggle { display: block; margin: 16px auto 0; }
   #taskdone .list { margin-top: 12px; }
 
+  /* boodschappen, takensaldo, koppeling */
+  .checkout { margin-top: 12px; }
+  .checkout .hint .linkbtn { font-size: 13px; }
+  .chip.pt { min-width: 44px; text-align: center; }
+  .chip .ci { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+  .score .cat-row:first-of-type { padding-top: 0; }
+  .amount-input.small input { font-size: 32px; }
+  .amount-input.small span { font-size: 20px; }
+  .avatar-btn { position: relative; padding: 0; color: inherit; font: inherit; font-size: 16px; font-weight: 500; }
+  .avatar-btn .gear { position: absolute; right: -3px; bottom: -3px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--surface-hi); border: 1px solid var(--field-border); color: var(--strong); }
+  .avatar-btn .gear svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .sensorlist { display: flex; flex-wrap: wrap; gap: 6px; }
+  .sensorlist code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 4px 9px; border-radius: 8px; background: var(--surface); border: 1px solid var(--field-border); }
+  .copybox { font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; overflow-x: auto; resize: vertical; min-height: 120px; }
+  /* Op de telefoon zit Instellingen achter je avatar op het overzicht. */
+  @media (max-width: 899px) { nav.tabs .tab[data-tab="settings"] { display: none; } }
+
+  /* recepten */
+  #grecipes { margin-top: 12px; }
+  .stepper { display: flex; align-items: center; gap: 12px; }
+  .stepper .iconbtn { width: 38px; height: 38px; box-shadow: none; }
+  .stepper b { min-width: 24px; text-align: center; font-size: 18px; font-weight: 500; }
+  .ings { border-radius: 16px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+  .ing { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 11px 14px; color: inherit; font: inherit; }
+  .ing:first-child { border-top: 0; }
+  .ing .check { flex: 0 0 auto; }
+  .ing .txt { flex: 1; min-width: 0; line-height: 1.3; overflow-wrap: anywhere; transition: color .2s; }
+  .ing .txt .muted { display: block; font-size: 12px; margin-top: 1px; }
+  .ing.off .txt { color: var(--muted); }
+  textarea.input { resize: vertical; line-height: 1.45; min-height: 90px; font: inherit; }
+  details.steps { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+  details.steps summary { cursor: pointer; font-weight: 500; padding: 4px 0; }
+  details.steps ol { margin: 10px 0 0; padding-left: 22px; line-height: 1.5; }
+  details.steps li { margin-bottom: 6px; }
+
   /* sheets */
   .overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     z-index: 10; display: flex; align-items: flex-end; justify-content: center; }
@@ -413,8 +449,9 @@
   <div class="brand"><span class="brand-mark">€</span>Kostendeler</div>
   <button class="tab active" data-tab="home" aria-label="Overzicht"><svg viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/></svg><span>Overzicht</span></button>
   <button class="tab" data-tab="tasks" aria-label="Taken"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/></svg><span>Taken</span></button>
-  <button class="tab" data-tab="stats" aria-label="Cijfers"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-6M20 19V9"/></svg><span>Cijfers</span></button>
   <button class="plus" id="fab" aria-label="Uitgave toevoegen"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg><span>Nieuwe uitgave</span></button>
+  <button class="tab" data-tab="groceries" aria-label="Boodschappen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span>Boodschappen</span></button>
+  <button class="tab" data-tab="stats" aria-label="Cijfers"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-6M20 19V9"/></svg><span>Cijfers</span></button>
   <button class="tab" data-tab="settings" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Instellingen</span></button>
 </nav>
 <div id="overlay-root"></div>
@@ -475,13 +512,14 @@ const ICON = {
   lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   bell: '<svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
   chart: '<svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>',
+  home: '<svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></svg>',
 };
 
 const S = {
   me: null, ingress: true, users: [], categories: [],
   tab: "home", month: thisMonth(), counts: {}, firstPaint: true, animate: true, fresh: null, recurring: [], statsMode: "month", year: new Date().getFullYear(), ysummary: null, notify: undefined,
   balances: {}, suggestions: [], activity: { expenses: [], settlements: [] }, summary: null,
-  tasks: { open: [], done: [] }, taskFilter: store.get("kostendeler-taskfilter") === "mine" ? "mine" : "all", showDone: false,
+  tasks: { open: [], done: [], points: null }, groceries: { items: [], staples: [], suggestions: [], recipes: [] }, taskFilter: store.get("kostendeler-taskfilter") === "mine" ? "mine" : "all", showDone: false,
 };
 
 async function api(method, path, body) {
@@ -557,9 +595,9 @@ async function boot() {
 }
 
 async function refresh() {
-  const [b, a, s, r, t] = await Promise.all([
-    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month), api("GET", "/recurring"), api("GET", "/tasks")]);
-  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s; S.recurring = r.recurring; S.tasks = t;
+  const [b, a, s, r, t, g] = await Promise.all([
+    api("GET", "/balances"), api("GET", "/activity?month=" + S.month), api("GET", "/summary?month=" + S.month), api("GET", "/recurring"), api("GET", "/tasks"), api("GET", "/groceries")]);
+  S.balances = b.balances; S.suggestions = b.suggestions; S.activity = a; S.summary = s; S.recurring = r.recurring; S.tasks = t; S.groceries = g;
   if (S.tab === "stats" && S.statsMode === "year") S.ysummary = await api("GET", "/summary?year=" + S.year);
   render();
 }
@@ -575,7 +613,7 @@ async function reloadMeta() {
 function syncTabs() {
   document.querySelectorAll("nav.tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.tab === S.tab));
   // De plusknop voegt toe wat bij het tabblad past.
-  const fab = document.getElementById("fab"), label = S.tab === "tasks" ? "Nieuwe taak" : "Nieuwe uitgave";
+  const fab = document.getElementById("fab"), label = S.tab === "tasks" ? "Nieuwe taak" : S.tab === "groceries" ? "Nieuwe boodschap" : "Nieuwe uitgave";
   fab.setAttribute("aria-label", label); fab.querySelector("span").textContent = label;
 }
 function render() {
@@ -584,13 +622,25 @@ function render() {
   // Taken: alleen de lijst verversen, zodat het invoerveld zijn focus (en het toetsenbord) houdt.
   if (S.tab === "tasks" && app.dataset.view === "tasks" && !S.animate && document.getElementById("tasklist")) {
     document.getElementById("tasklist").innerHTML = renderTaskList();
+    document.getElementById("taskscore").innerHTML = renderTaskScore();
     document.getElementById("taskdone").innerHTML = renderTaskDone();
     document.getElementById("taskseg").innerHTML = taskSegInner();
     S.fresh = null;
     return;
   }
+  if (S.tab === "groceries" && app.dataset.view === "groceries" && !S.animate && document.getElementById("glist")) {
+    const n = S.groceries.items.filter(i => i.status === "open").length;
+    document.getElementById("glist").innerHTML = renderGroceryList();
+    document.getElementById("gstaples").innerHTML = renderStaples();
+    document.getElementById("grecipes").innerHTML = renderRecipes();
+    document.getElementById("gcount").textContent = n ? `${n} nodig` : "Alles in huis";
+    document.getElementById("gsugg").innerHTML = S.groceries.suggestions.map(x => `<option value="${esc(x)}">`).join("");
+    S.fresh = null;
+    return;
+  }
   if (S.tab === "home") app.innerHTML = renderHome();
   else if (S.tab === "tasks") app.innerHTML = renderTasks();
+  else if (S.tab === "groceries") app.innerHTML = renderGroceries();
   else if (S.tab === "stats") app.innerHTML = renderStats();
   else app.innerHTML = renderSettings();
   app.dataset.view = S.tab;
@@ -695,7 +745,7 @@ function renderHome() {
   const header = `<header class="hello"><div class="txt">
       <div class="date">${esc(cap(new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })))}</div>
       <h1>${greeting()}${meName ? ", " + esc(meName) : ""}</h1></div>
-    <div class="avatar">${esc(initials(user(S.me)?.name))}</div></header>`;
+    <button class="avatar avatar-btn" data-act="open-settings" aria-label="Instellingen">${esc(initials(user(S.me)?.name))}<span class="gear"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span></button></header>`;
   const items = [
     ...S.activity.expenses.map(e => ({ kind: "e", date: e.date, at: e.created_at || "", data: e })),
     ...S.activity.settlements.map(s => ({ kind: "s", date: s.date, at: s.created_at || "", data: s })),
@@ -737,8 +787,11 @@ function renderHome() {
 const REPEAT_WORDS = { day: ["dag", "dagen"], week: ["week", "weken"], month: ["maand", "maanden"] };
 const REPEAT_OPTS = [["", "Niet herhalen"], ["day:1", "Elke dag"], ["week:1", "Elke week"], ["week:2", "Elke 2 weken"], ["month:1", "Elke maand"]];
 const PLUS_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>';
+const X_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg>';
+const ROTATE_ICON = '<svg class="ci" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h8a4 4 0 0 1 0 8h-1M16 17H8a4 4 0 0 1 0-8h1"/><path d="M14 4.5 16.5 7 14 9.5M10 14.5 7.5 17l2.5 2.5"/></svg>';
 const findTask = id => [...S.tasks.open, ...S.tasks.done].find(t => t.id === id);
 const addDaysISO = n => { const d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const firstName = id => id === S.me ? "jij" : (user(id)?.name || "Onbekend").split(" ")[0];
 
 function repeatText(t) {
   const w = REPEAT_WORDS[t.repeat_unit];
@@ -775,7 +828,9 @@ function taskRow(t, isDone) {
   } else {
     if (t.due_date) bits.push(`<span class="${late ? "late" : ""}">${esc(taskDue(t.due_date))}</span>`);
     if (t.repeat_unit) bits.push(`<span>${REPEAT_ICON.replace(' rep"', '"')}${esc(repeatText(t))}</span>`);
-    if (t.repeat_unit && t.done_by) bits.push(`<span>laatst door ${esc(nameObj(t.done_by))}</span>`);
+    if (t.rotation && t.upcoming) bits.push(`<span>${ROTATE_ICON}daarna ${esc(firstName(t.upcoming))}</span>`);
+    else if (t.repeat_unit && t.done_by) bits.push(`<span>laatst door ${esc(nameObj(t.done_by))}</span>`);
+    if (t.points > 1) bits.push(`<span>${t.points} punten</span>`);
   }
   const who = t.assigned_to ? `<span class="tav" title="${esc(nameOf(t.assigned_to, true))}">${esc(initials(user(t.assigned_to)?.name))}</span>` : "";
   return `<div class="task ${isDone ? "is-done" : ""} ${S.fresh === "t" + t.id ? "fresh" : ""}">
@@ -801,6 +856,28 @@ function renderTaskList() {
     `<div class="day ${cls}">${label}</div><div class="list">${items.map(t => taskRow(t, false)).join("")}</div>`).join("");
 }
 
+// Takensaldo: wie deed deze maand hoeveel (in punten).
+function renderTaskScore() {
+  const per = S.tasks.points?.per_user || {};
+  const rows = S.users.map(u => ({ id: u.id, ...(per[u.id] || { points: 0, count: 0 }) }));
+  const total = rows.reduce((a, r) => a + r.points, 0);
+  if (S.users.length < 2 && !total) return "";
+  const max = Math.max(1, ...rows.map(r => r.points));
+  const sorted = [...rows].sort((a, b) => b.points - a.points);
+  let verdict = "Nog niets afgevinkt deze maand.";
+  if (total) {
+    const diff = sorted[0].points - (sorted[1]?.points || 0);
+    verdict = diff === 0 ? "Jullie staan gelijk." : sorted[0].id === S.me ? `Jij loopt ${diff} ${diff === 1 ? "punt" : "punten"} voor.`
+      : `${esc(firstName(sorted[0].id).replace(/^./, c => c.toUpperCase()))} loopt ${diff} ${diff === 1 ? "punt" : "punten"} voor.`;
+  }
+  const month = S.tasks.points?.month || thisMonth();
+  return `<div class="card score"><div class="card-head">${ICON.bars}<span class="sp">Takensaldo</span><span class="status">${esc(cap(monthLabel(month).split(" ")[0]))}</span></div>
+    ${rows.map(r => `<div class="cat-row"><div class="top"><span>${esc(nameOf(r.id, true))}</span><b class="tnum">${r.points} <span class="muted" style="font-size:13px">${r.points === 1 ? "punt" : "punten"}</span></b></div>
+      <div class="bar"><i style="width:${Math.round(r.points / max * 100)}%;background:var(${r.id === S.me ? "--tick-on" : "--chart-a"})"></i></div>
+      <div class="sub tnum">${r.count} ${r.count === 1 ? "taak" : "taken"} gedaan</div></div>`).join("")}
+    <div class="hint">${verdict} Zwaardere taken tellen voor meer punten.</div></div>`;
+}
+
 function renderTaskDone() {
   const { done } = visibleTasks();
   if (!done.length) return "";
@@ -818,7 +895,7 @@ function renderTasks() {
       <form class="quickadd" id="qa" autocomplete="off"><input class="input" id="qa-input" placeholder="Nieuwe taak…" maxlength="200" enterkeyhint="done" aria-label="Nieuwe taak">
         <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
       <div id="tasklist">${renderTaskList()}</div></div>
-    <div class="col"><div id="taskdone">${renderTaskDone()}</div></div></div>`;
+    <div class="col col-side"><div id="taskscore">${renderTaskScore()}</div><div id="taskdone">${renderTaskDone()}</div></div></div>`;
 }
 
 async function completeTask(id, row) {
@@ -829,9 +906,12 @@ async function completeTask(id, row) {
     const [r] = await Promise.all([api("POST", `/tasks/${id}/complete`, { today: todayISO() }),
       new Promise(res => setTimeout(res, reduceMotion() ? 0 : 420))]);
     await refresh();
-    const msg = r.task.repeat_unit ? `Klaar, volgende keer ${taskDue(r.task.due_date).toLowerCase()}` : "Afgevinkt";
+    const t = r.task, pts = t.points > 1 ? ` (+${t.points})` : "";
+    const msg = t.repeat_unit
+      ? (t.rotation && t.assigned_to !== S.me ? `Klaar${pts}, nu ${firstName(t.assigned_to)} · ${taskDue(t.due_date).toLowerCase()}` : `Klaar${pts}, volgende keer ${taskDue(t.due_date).toLowerCase()}`)
+      : `Afgevinkt${pts}`;
     toast(msg, { label: "Ongedaan maken", fn: async () => {
-      try { await api("PUT", "/tasks/" + id, { ...r.previous, done: false }); buzz(); await refresh(); toast("Teruggezet"); }
+      try { await api("POST", `/tasks/${id}/undo`, { previous: r.previous, log_id: r.log_id }); buzz(); await refresh(); toast("Teruggezet"); }
       catch (err) { toast(err.message); }
     } });
   } catch (err) { row.classList.remove("finishing"); toast(err.message); }
@@ -843,36 +923,49 @@ async function reopenTask(id) {
 }
 
 function taskSheet(existing) {
+  const ids = S.users.map(u => u.id);
   const T = existing
-    ? { id: existing.id, who: existing.assigned_to, rep: existing.repeat_unit ? `${existing.repeat_unit}:${existing.repeat_every}` : "" }
-    : { id: null, who: null, rep: "" };
+    ? { id: existing.id, who: existing.rotation ? "rot" : existing.assigned_to, turn: existing.turn_user || existing.assigned_to || S.me,
+        rep: existing.repeat_unit ? `${existing.repeat_unit}:${existing.repeat_every}` : "", points: existing.points || 1 }
+    : { id: null, who: null, turn: S.me, rep: "", points: 1 };
   const repOpts = [...REPEAT_OPTS];
   if (T.rep && !repOpts.some(o => o[0] === T.rep)) repOpts.push([T.rep, cap(repeatText(existing))]);
+  const canRotate = ids.length >= 2;
   openSheet(`
     <h3>${existing ? "Taak bewerken" : "Nieuwe taak"}</h3>
     <div class="field"><label for="t-title">Wat moet er gebeuren?</label>
-      <input class="input" id="t-title" maxlength="200" placeholder="Bijv. Vuilnisbak buiten zetten" value="${esc(existing?.title || "")}"></div>
-    <div class="field"><span class="label">Voor wie</span><div class="chips" id="t-who"></div></div>
-    <div class="field"><label for="t-due">Deadline</label>
-      <input class="input" type="date" id="t-due" value="${esc(existing?.due_date || "")}">
-      <div class="chips" id="t-quick" style="margin-top:10px"></div></div>
+      <input class="input" id="t-title" maxlength="200" placeholder="Bijv. Wc schoonmaken" value="${esc(existing?.title || "")}"></div>
     <div class="field"><label for="t-rep">Herhalen</label>
       <select class="input" id="t-rep">${repOpts.map(([v, l]) => `<option value="${v}" ${v === T.rep ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
       <div class="hint" id="t-rephint"></div></div>
+    <div class="field"><span class="label">Voor wie</span><div class="chips" id="t-who"></div>
+      <div id="t-turnwrap" class="hidden" style="margin-top:12px"><span class="label">Nu aan de beurt</span><div class="chips" id="t-turn"></div></div></div>
+    <div class="field"><label for="t-due">${existing?.repeat_unit ? "Volgende keer" : "Deadline"}</label>
+      <input class="input" type="date" id="t-due" value="${esc(existing?.due_date || "")}">
+      <div class="chips" id="t-quick" style="margin-top:10px"></div></div>
+    <div class="field"><span class="label">Zwaarte</span><div class="chips" id="t-pts"></div>
+      <div class="hint">Telt mee in het takensaldo: een licht klusje 1 punt, de wc schoonmaken bijvoorbeeld 3.</div></div>
     <button class="btn primary block" id="t-save">Opslaan</button>
-    ${existing ? `<div class="row-actions">${existing.done ? "" : `<button class="btn" id="t-exp">Uitgave van maken</button>`}<button class="btn danger" id="t-del">Verwijderen</button></div>` : ""}
+    ${existing ? `<div class="row-actions">${!existing.done && canRotate ? `<button class="btn" id="t-move">Overdragen</button>` : ""}${existing.done ? "" : `<button class="btn" id="t-exp">Uitgave</button>`}<button class="btn danger" id="t-del">Verwijderen</button></div>` : ""}
   `, sheet => {
     const $ = s => sheet.querySelector(s);
     const popSel = sel => { const el = sheet.querySelector(sel); if (el) el.classList.add("pop"); };
-    const drawWho = () => $("#t-who").innerHTML = [`<button class="chip ${T.who == null ? "on" : ""}" data-u="">Iedereen</button>`,
-      ...S.users.map(u => `<button class="chip ${T.who === u.id ? "on" : ""}" data-u="${esc(u.id)}">${esc(nameOf(u.id, true))}</button>`)].join("");
+    const drawWho = () => {
+      const opts = [["", "Iedereen"], ...S.users.map(u => [u.id, nameOf(u.id, true)])];
+      if (canRotate && $("#t-rep").value) opts.push(["rot", "Om de beurt"]);
+      if (T.who === "rot" && !$("#t-rep").value) T.who = null;
+      $("#t-who").innerHTML = opts.map(([v, l]) => `<button class="chip ${(T.who ?? "") === v ? "on" : ""}" data-u="${esc(v)}">${v === "rot" ? ROTATE_ICON : ""}${esc(l)}</button>`).join("");
+      $("#t-turnwrap").classList.toggle("hidden", T.who !== "rot");
+      $("#t-turn").innerHTML = S.users.map(u => `<button class="chip ${T.turn === u.id ? "on" : ""}" data-t="${esc(u.id)}">${esc(nameOf(u.id, true))}</button>`).join("");
+    };
     const drawQuick = () => $("#t-quick").innerHTML = [["Vandaag", todayISO()], ["Morgen", addDaysISO(1)], ["Geen datum", ""]].map(([l, v]) =>
       `<button class="chip ${$("#t-due").value === v ? "on" : ""}" data-d="${v}">${l}</button>`).join("");
+    const drawPts = () => $("#t-pts").innerHTML = [1, 2, 3, 4, 5].map(n => `<button class="chip pt ${T.points === n ? "on" : ""}" data-p="${n}">${n}</button>`).join("");
     const sync = () => {
       $("#t-save").disabled = !$("#t-title").value.trim();
-      $("#t-rephint").textContent = $("#t-rep").value ? "Vink je de taak af, dan komt hij vanzelf terug op de eerstvolgende datum." : "";
+      $("#t-rephint").textContent = $("#t-rep").value ? "Vink je hem af, dan komt hij vanzelf terug op de eerstvolgende datum." : "";
     };
-    drawWho(); drawQuick(); sync();
+    drawWho(); drawQuick(); drawPts(); sync();
     if (!existing) setTimeout(() => $("#t-title").focus(), 250);
 
     $("#t-title").addEventListener("input", sync);
@@ -881,28 +974,45 @@ function taskSheet(existing) {
       const b = e.target.closest("[data-u]"); if (!b) return;
       T.who = b.dataset.u || null; drawWho(); popSel(`#t-who [data-u="${CSS.escape(b.dataset.u)}"]`);
     });
+    $("#t-turn").addEventListener("click", e => {
+      const b = e.target.closest("[data-t]"); if (!b) return;
+      T.turn = b.dataset.t; drawWho(); popSel(`#t-turn [data-t="${CSS.escape(b.dataset.t)}"]`);
+    });
+    $("#t-pts").addEventListener("click", e => {
+      const b = e.target.closest("[data-p]"); if (!b) return;
+      T.points = Number(b.dataset.p); drawPts(); popSel(`#t-pts [data-p="${b.dataset.p}"]`);
+    });
     $("#t-quick").addEventListener("click", e => {
       const b = e.target.closest("[data-d]"); if (!b) return;
       $("#t-due").value = b.dataset.d;
       if (!b.dataset.d) $("#t-rep").value = ""; // herhalen heeft een datum nodig
-      drawQuick(); sync(); popSel(`#t-quick [data-d="${b.dataset.d}"]`);
+      drawQuick(); drawWho(); sync(); popSel(`#t-quick [data-d="${b.dataset.d}"]`);
     });
-    $("#t-due").addEventListener("change", () => { if (!$("#t-due").value) $("#t-rep").value = ""; drawQuick(); sync(); });
+    $("#t-due").addEventListener("change", () => { if (!$("#t-due").value) $("#t-rep").value = ""; drawQuick(); drawWho(); sync(); });
     $("#t-rep").addEventListener("change", () => {
       if ($("#t-rep").value && !$("#t-due").value) $("#t-due").value = todayISO();
-      drawQuick(); sync();
+      drawQuick(); drawWho(); sync();
     });
 
     $("#t-save").addEventListener("click", async () => {
       const [unit, every] = $("#t-rep").value ? $("#t-rep").value.split(":") : [null, 1];
-      const body = { title: $("#t-title").value.trim(), assigned_to: T.who, due_date: $("#t-due").value || null,
-        repeat_unit: unit, repeat_every: Number(every) };
+      const body = { title: $("#t-title").value.trim(), assigned_to: T.who === "rot" ? null : T.who, due_date: $("#t-due").value || null,
+        repeat_unit: unit, repeat_every: Number(every), points: T.points, rotation: null };
+      if (T.who === "rot") {
+        // Bestaande volgorde houden; wie nu aan de beurt is, bepaal je zelf.
+        body.rotation = existing?.rotation && existing.rotation.length === ids.length && ids.every(i => existing.rotation.includes(i)) ? existing.rotation : ids;
+        body.turn_user = T.turn;
+        const same = existing?.rotation && existing.turn_user === T.turn;
+        body.assigned_to = same ? existing.assigned_to : T.turn;
+        body.next_override = same ? existing.next_override : null;
+      }
       $("#t-save").disabled = true;
       try {
         const saved = T.id ? await api("PUT", "/tasks/" + T.id, body) : await api("POST", "/tasks", body);
         S.fresh = "t" + saved.id; buzz(); closeSheet(); toast(T.id ? "Bijgewerkt" : "Toegevoegd"); await refresh();
       } catch (err) { toast(err.message); $("#t-save").disabled = false; }
     });
+    existing && $("#t-move") && $("#t-move").addEventListener("click", () => transferSheet(existing));
     existing && $("#t-exp") && $("#t-exp").addEventListener("click", () =>
       expenseSheet(null, false, { description: existing.title, taskId: existing.id }));
     existing && $("#t-del").addEventListener("click", async () => {
@@ -911,6 +1021,408 @@ function taskSheet(existing) {
         undoToast(`${existing.title} verwijderd`, "/tasks/restore", r.deleted, "t");
       } catch (err) { toast(err.message); }
     });
+  });
+}
+
+// Overdragen: ruilen (om de beurt) of afkopen met een vergoeding die in het saldo komt.
+function transferSheet(t) {
+  const payer = t.assigned_to || S.me;
+  const others = S.users.filter(u => u.id !== t.assigned_to);
+  const F = { to: (others.find(u => u.id !== S.me) || others[0])?.id, mode: t.rotation ? "swap" : "buy" };
+  openSheet(`
+    <h3>Overdragen</h3>
+    <p class="muted" style="margin:0 0 16px">${esc(t.title)}</p>
+    <div class="field"><span class="label">Wie neemt het over?</span><div class="chips" id="x-to"></div></div>
+    ${t.rotation ? `<div class="field"><span class="label">Hoe?</span><div class="seg" id="x-mode" style="display:inline-flex">
+      <button data-m="swap">Ruilen</button><button data-m="buy">Afkopen</button></div></div>` : ""}
+    <div class="field" id="x-amountf"><label for="x-amount">${t.rotation ? "Vergoeding" : "Vergoeding (mag leeg)"}</label>
+      <div class="amount-input small"><span>€</span><input id="x-amount" class="tnum" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+    <div class="hint" id="x-hint" style="margin:-4px 0 18px"></div>
+    <button class="btn primary block" id="x-save">Overdragen</button>
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const draw = () => {
+      $("#x-to").innerHTML = others.map(u => `<button class="chip ${F.to === u.id ? "on" : ""}" data-u="${esc(u.id)}">${esc(nameOf(u.id, true))}</button>`).join("");
+      if (t.rotation) $("#x-mode").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === F.mode));
+      $("#x-amountf").classList.toggle("hidden", F.mode === "swap");
+      const amt = parseAmount($("#x-amount").value), to = F.to;
+      let hint;
+      if (F.mode === "swap") hint = `${cap(firstName(to))} doet deze beurt, ${payer === S.me ? "jij doet" : firstName(payer) + " doet"} daarna de volgende beurt van ${to === S.me ? "jou" : firstName(to)}.`;
+      else if (amt > 0) hint = `${payer === S.me ? "Je betaalt" : cap(firstName(payer)) + " betaalt"} ${to === S.me ? "jou" : firstName(to)} ${fmt(amt)}. Dat komt als uitgave in het saldo.`;
+      else hint = `${cap(firstName(to))} doet deze keer, zonder vergoeding.`;
+      if (F.mode === "buy" && t.rotation) hint += " Daarna gaat de beurt gewoon door.";
+      $("#x-hint").textContent = hint;
+      $("#x-save").disabled = !to || isNaN(amt) || (F.mode === "buy" && t.rotation && !(amt > 0));
+    };
+    draw();
+    $("#x-to").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; F.to = b.dataset.u; draw(); });
+    t.rotation && $("#x-mode").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (!b) return; F.mode = b.dataset.m; draw();
+      if (F.mode === "buy") setTimeout(() => $("#x-amount").focus(), 50); });
+    $("#x-amount").addEventListener("input", draw);
+    $("#x-save").addEventListener("click", async () => {
+      const amount = F.mode === "buy" ? (parseAmount($("#x-amount").value) || 0) : 0;
+      $("#x-save").disabled = true;
+      try {
+        await api("POST", `/tasks/${t.id}/transfer`, { to: F.to, mode: F.mode, amount });
+        buzz(); closeSheet(); S.fresh = "t" + t.id;
+        const who = F.to === S.me ? "Jij neemt het over" : `Overgedragen aan ${firstName(F.to)}`;
+        toast(amount ? `${who} · ${fmt(amount)}` : who); await refresh();
+      } catch (err) { toast(err.message); $("#x-save").disabled = false; }
+    });
+  });
+}
+
+// ------------------------------------------------------------ boodschappen
+const STAPLE_ICON = '<svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';
+const CART_ICON = '<svg viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/><path d="M3 4h2.2l2.3 11h10.3l2-8H6.4"/></svg>';
+const onListByName = name => S.groceries.items.find(i => i.name.toLowerCase() === name.toLowerCase());
+
+function groceryRow(i) {
+  const inBasket = i.status === "basket";
+  const meta = inBasket ? (i.checked_by && i.checked_by !== S.me ? `door ${firstName(i.checked_by)}` : "")
+    : (i.added_by && i.added_by !== S.me ? `van ${firstName(i.added_by)}` : !i.added_by ? "via Home Assistant" : "");
+  return `<div class="task ${inBasket ? "is-done" : ""} ${S.fresh === "g" + i.id ? "fresh" : ""}">
+    <button class="tcheck" data-act="g-check" data-id="${i.id}" aria-label="${inBasket ? "Terug op de lijst" : "In mandje"}"><span class="check ${inBasket ? "on" : ""}">${CHECK_ICON}</span></button>
+    <button class="tmain" data-act="g-edit" data-id="${i.id}"><span class="title">${esc(i.name)}</span>${meta ? `<span class="meta"><span>${esc(meta)}</span></span>` : ""}</button></div>`;
+}
+
+function renderStaples() {
+  const st = S.groceries.staples;
+  return `<div class="card"><div class="card-head">${STAPLE_ICON}<span class="sp">Bijna op?</span><button class="linkbtn" data-act="g-staples">Bewerken</button></div>
+    ${st.length ? `<div class="chips">${st.map(s => `<button class="chip ${onListByName(s.name) ? "on" : ""}" data-act="g-staple" data-name="${esc(s.name)}">${esc(s.name)}</button>`).join("")}</div>
+      <div class="hint">Eén tik en het staat op de lijst.</div>`
+    : `<div class="hint" style="margin:0">Voeg spullen toe die jullie vaak halen, zoals wc-papier of afwasmiddel.</div>`}</div>`;
+}
+
+function renderGroceryList() {
+  const open = S.groceries.items.filter(i => i.status === "open");
+  const basket = S.groceries.items.filter(i => i.status === "basket");
+  let html = open.length
+    ? `<div class="day">Op de lijst · ${open.length}</div><div class="list">${open.map(groceryRow).join("")}</div>`
+    : `<div class="list"><div class="empty">${basket.length ? "Alles in je mandje." : "De lijst is leeg."}<br>${basket.length ? "Klaar bij de kassa? Reken hieronder af." : "Typ hierboven wat er nodig is."}</div></div>`;
+  if (basket.length) {
+    html += `<div class="day">In je mandje · ${basket.length}</div><div class="list">${basket.map(groceryRow).join("")}</div>
+      <div class="card checkout"><div class="card-head">${CART_ICON}<span class="sp">Bij de kassa</span></div>
+        <button class="btn primary block" data-act="g-checkout">Bedrag invullen</button>
+        <div class="hint" style="text-align:center">Wordt één uitgave voor alles in je mandje. <button class="linkbtn" data-act="g-clear">Zonder bedrag afronden</button></div></div>`;
+  }
+  return html;
+}
+
+function renderGroceries() {
+  const n = S.groceries.items.filter(i => i.status === "open").length;
+  return `<header class="hello"><div class="txt"><div class="date">Kostendeler</div><h1>Boodschappen</h1></div>
+      <span class="status tnum" id="gcount">${n ? `${n} nodig` : "Alles in huis"}</span></header>
+    <div class="cols"><div class="col col-side">
+      <form class="quickadd" id="gqa" autocomplete="off"><input class="input" id="gqa-input" placeholder="Wat is er nodig?" maxlength="80" enterkeyhint="done" aria-label="Boodschap toevoegen" list="gsugg">
+        <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
+      <datalist id="gsugg">${S.groceries.suggestions.map(s => `<option value="${esc(s)}">`).join("")}</datalist>
+      <div id="gstaples" style="margin-top:12px">${renderStaples()}</div>
+      <div id="grecipes">${renderRecipes()}</div></div>
+    <div class="col"><div id="glist">${renderGroceryList()}</div></div></div>`;
+}
+
+function groceryDescription(names) {
+  if (names.length <= 3) return names.length > 1 ? names.slice(0, -1).join(", ") + " en " + names[names.length - 1] : names[0];
+  return `Boodschappen: ${names.slice(0, 3).join(", ")} en nog ${names.length - 3}`;
+}
+
+async function addGrocery(name) {
+  const r = await api("POST", "/groceries", { name });
+  S.fresh = "g" + r.item.id; buzz(); await refresh();
+  if (!r.created) toast(`${r.item.name} staat al op de lijst`);
+}
+
+async function toggleGrocery(id, row) {
+  const item = S.groceries.items.find(i => i.id === id); if (!item || row?.classList.contains("finishing")) return;
+  if (item.status === "open") row?.classList.add("finishing");
+  buzz();
+  try {
+    await Promise.all([api("POST", `/groceries/${id}/check`, { checked: item.status === "open" }),
+      new Promise(res => setTimeout(res, reduceMotion() || item.status !== "open" ? 0 : 260))]);
+    await refresh();
+  } catch (err) { row?.classList.remove("finishing"); toast(err.message); }
+}
+
+function grocerySheet(item) {
+  const isStaple = S.groceries.staples.some(s => s.name.toLowerCase() === item.name.toLowerCase());
+  openSheet(`
+    <h3>Boodschap</h3>
+    <div class="field"><label for="g-name">Naam</label><input class="input" id="g-name" maxlength="80" value="${esc(item.name)}"></div>
+    <button class="btn primary block" id="g-save">Opslaan</button>
+    <div class="row-actions">${isStaple ? "" : `<button class="btn" id="g-staple">Vast spul maken</button>`}<button class="btn danger" id="g-del">Verwijderen</button></div>
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const save = async () => {
+      try { await api("PUT", "/groceries/" + item.id, { name: $("#g-name").value }); buzz(); closeSheet(); await refresh(); }
+      catch (err) { toast(err.message); }
+    };
+    $("#g-save").addEventListener("click", save);
+    $("#g-name").addEventListener("keydown", e => { if (e.key === "Enter") save(); });
+    $("#g-staple") && $("#g-staple").addEventListener("click", async () => {
+      try { await api("POST", "/staples", { name: item.name }); buzz(); closeSheet(); toast(`${item.name} staat nu bij Bijna op`); await refresh(); }
+      catch (err) { toast(err.message); }
+    });
+    $("#g-del").addEventListener("click", async () => {
+      try {
+        const r = await api("DELETE", "/groceries/" + item.id); buzz(); closeSheet(); await refresh();
+        undoToast(`${item.name} verwijderd`, "/groceries/restore", r.deleted, "g");
+      } catch (err) { toast(err.message); }
+    });
+  });
+}
+
+function staplesSheet() {
+  const draw = sheet => sheet.querySelector("#st-list").innerHTML = S.groceries.staples.map(s =>
+    `<div class="split-row"><span class="who">${esc(s.name)}</span><button class="iconbtn" style="width:36px;height:36px;box-shadow:none" data-del="${s.id}" aria-label="${esc(s.name)} weghalen">${X_ICON}</button></div>`).join("")
+    || `<div class="hint" style="margin:0 0 8px">Nog geen vaste spullen.</div>`;
+  openSheet(`
+    <h3>Vaste spullen</h3>
+    <div id="st-list" style="margin-bottom:14px"></div>
+    <form class="quickadd" id="st-form" autocomplete="off"><input class="input" id="st-name" placeholder="Bijv. Tandpasta" maxlength="80" aria-label="Vast spul toevoegen">
+      <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
+    <div class="hint">Deze staan als knoppen bovenaan, zodat je ze met één tik op de lijst zet.</div>
+  `, sheet => {
+    draw(sheet);
+    sheet.querySelector("#st-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const input = sheet.querySelector("#st-name"); if (!input.value.trim()) return;
+      try { await api("POST", "/staples", { name: input.value }); input.value = ""; buzz(); await refresh(); draw(sheet); }
+      catch (err) { toast(err.message); }
+    });
+    sheet.querySelector("#st-list").addEventListener("click", async e => {
+      const b = e.target.closest("[data-del]"); if (!b) return;
+      try { await api("DELETE", "/staples/" + b.dataset.del); buzz(); await refresh(); draw(sheet); }
+      catch (err) { toast(err.message); }
+    });
+  });
+}
+
+// ------------------------------------------------------------ recepten
+const BOOK_ICON = '<svg viewBox="0 0 24 24"><path d="M5 4.5h10.5A2.5 2.5 0 0 1 18 7v12.5H7.5A2.5 2.5 0 0 1 5 17z"/><path d="M5 17a2.5 2.5 0 0 1 2.5-2.5H18"/><path d="M9 8h5"/></svg>';
+const FRAC = { "½": .5, "¼": .25, "¾": .75, "⅓": 1 / 3, "⅔": 2 / 3 };
+const num = x => parseFloat(String(x).replace(",", "."));
+// Hoeveelheid vooraan een regel: "200 g", "1½ ui", "1 1/2 el", "2-3 teentjes".
+function parseQty(line) {
+  let m, v, len;
+  if ((m = line.match(/^\s*(\d+)\s+(\d+)\/(\d+)/))) { v = +m[1] + m[2] / m[3]; len = m[0].length; }
+  else if ((m = line.match(/^\s*(\d+)\/(\d+)/))) { v = m[1] / m[2]; len = m[0].length; }
+  else if ((m = line.match(/^\s*(\d+(?:[.,]\d+)?)\s*([½¼¾⅓⅔])?/))) { v = num(m[1]) + (m[2] ? FRAC[m[2]] : 0); len = m[0].length; }
+  else if ((m = line.match(/^\s*([½¼¾⅓⅔])/))) { v = FRAC[m[1]]; len = m[0].length; }
+  else return null;
+  let to = null;
+  const r = line.slice(len).match(/^\s*-\s*(\d+(?:[.,]\d+)?)/);
+  if (r) { to = num(r[1]); len += r[0].length; }
+  return { v, to, rest: line.slice(len) };
+}
+function fmtQty(v) {
+  const whole = Math.floor(v + 1e-9), part = v - whole;
+  if (Math.abs(v - Math.round(v)) < 0.05) return String(Math.round(v));
+  const f = [[.25, "¼"], [.5, "½"], [.75, "¾"], [1 / 3, "⅓"], [2 / 3, "⅔"]].find(([x]) => Math.abs(part - x) < 0.03);
+  if (f && v < 10) return (whole || "") + f[1];
+  return (v >= 10 ? String(Math.round(v)) : v.toFixed(1).replace(".", ","));
+}
+function scaleLine(line, factor) {
+  if (factor === 1) return line;
+  const q = parseQty(line);
+  if (!q) return line;
+  const rest = q.rest.trimStart();
+  return fmtQty(q.v * factor) + (q.to != null ? "-" + fmtQty(q.to * factor) : "") + (rest && !/^[,.)]/.test(rest) ? " " : "") + rest;
+}
+// Naam zonder hoeveelheid en eenheid, om dubbelen en voorraad te herkennen.
+const UNITS = /^(g|gr|gram|kg|kilo|mg|ml|l|liter|dl|cl|el|tl|eetlepels?|theelepels?|stuks?|st|blik(je|jes)?|zak(je|jes)?|pak(je|jes)?|potje|pot|bos(je)?|teen(tjes?)?|teentjes?|takjes?|plakjes?|snufje|scheutje|handje|handvol|kopje|cup)\b\.?\s*/i;
+const ingName = line => { const q = parseQty(line); return (q ? q.rest : line).trim().replace(UNITS, "").replace(/^(van |de |het )/i, "").trim().toLowerCase(); };
+const PANTRY = /^(zout|peper|zwarte peper|versgemalen (zwarte )?peper|zout en peper|peper en zout|olie|olijfolie|zonnebloemolie|(lauw )?water|suiker|bloem|boter|roomboter)\b/;
+
+function renderRecipes() {
+  const rs = S.groceries.recipes || [];
+  const shown = rs.slice(0, 10);
+  return `<div class="card"><div class="card-head">${BOOK_ICON}<span class="sp">Recepten</span><button class="linkbtn" data-act="r-new">Nieuw</button></div>
+    ${rs.length ? `<div class="chips">${shown.map(r => `<button class="chip" data-act="r-open" data-id="${r.id}">${esc(r.title)}</button>`).join("")}
+        ${rs.length > shown.length ? `<button class="chip" data-act="r-all">Alle ${rs.length}</button>` : ""}</div>
+      <div class="hint">Kies een recept en zet de ingrediënten in één keer op de lijst.</div>`
+    : `<div class="hint" style="margin:0">Bewaar jullie vaste recepten, of haal er een op met een link van een receptensite. Daarna zet je de ingrediënten met één tik op de lijst.</div>`}</div>`;
+}
+
+function recipesAllSheet() {
+  openSheet(`<h3>Recepten</h3>
+    <input class="input" id="r-search" placeholder="Zoeken…" style="margin-bottom:14px">
+    <div class="list" id="r-list"></div>`, sheet => {
+    const draw = () => {
+      const q = sheet.querySelector("#r-search").value.trim().toLowerCase();
+      const rs = S.groceries.recipes.filter(r => !q || r.title.toLowerCase().includes(q) || r.ingredients.some(i => i.toLowerCase().includes(q)));
+      sheet.querySelector("#r-list").innerHTML = rs.map(r => `<button class="settings-item" data-id="${r.id}"><span class="sp">${esc(r.title)}</span><span class="muted" style="font-size:13px">${r.ingredients.length} ingr.</span></button>`).join("")
+        || `<div class="empty">Niets gevonden.</div>`;
+    };
+    draw();
+    sheet.querySelector("#r-search").addEventListener("input", draw);
+    sheet.querySelector("#r-list").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) recipeSheet(S.groceries.recipes.find(r => r.id === Number(b.dataset.id))); });
+  });
+}
+
+function recipeSheet(r) {
+  if (!r) return;
+  const onList = new Set(S.groceries.items.map(i => ingName(i.name)));
+  const R = { servings: r.servings, picked: r.ingredients.map(line => !onList.has(ingName(line)) && !PANTRY.test(ingName(line))) };
+  let host = ""; try { host = r.source_url ? new URL(r.source_url).hostname.replace(/^www\./, "") : ""; } catch {}
+  openSheet(`
+    <h3>${esc(r.title)}</h3>
+    ${host ? `<p style="margin:-6px 0 14px"><a class="linkbtn" href="${esc(r.source_url)}" target="_blank" rel="noopener noreferrer">Bron: ${esc(host)}</a></p>` : ""}
+    <div class="split-row" style="margin-bottom:6px"><span class="who">Personen</span>
+      <div class="stepper"><button class="iconbtn" id="r-min" aria-label="Minder">${'<svg class="ci" viewBox="0 0 24 24"><path d="M6 12h12"/></svg>'}</button>
+      <b class="tnum" id="r-n"></b><button class="iconbtn" id="r-plus" aria-label="Meer">${PLUS_ICON}</button></div></div>
+    <div class="toggle-line" style="margin:12px 0 6px"><span class="label">Wat moet je halen?</span><button class="linkbtn" id="r-allnone"></button></div>
+    <div class="ings" id="r-ings"></div>
+    <button class="btn primary block" id="r-add" style="margin-top:16px"></button>
+    ${r.steps ? `<details class="steps"><summary>Bereiding</summary><ol>${r.steps.split("\n").filter(Boolean).map(s => `<li>${esc(s)}</li>`).join("")}</ol></details>` : ""}
+    <div class="row-actions"><button class="btn" id="r-edit">Bewerken</button><button class="btn danger" id="r-del">Verwijderen</button></div>
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const lines = () => r.ingredients.map(l => scaleLine(l, R.servings / r.servings));
+    const draw = () => {
+      $("#r-n").textContent = R.servings;
+      const ls = lines();
+      $("#r-ings").innerHTML = ls.map((l, i) => {
+        const nm = ingName(r.ingredients[i]);
+        const note = onList.has(nm) ? "staat al op de lijst" : PANTRY.test(nm) ? "heb je waarschijnlijk al" : "";
+        return `<button class="ing ${R.picked[i] ? "" : "off"}" data-i="${i}"><span class="check ${R.picked[i] ? "on" : ""}">${CHECK_ICON}</span>
+          <span class="txt">${esc(l)}${note ? `<span class="muted">${note}</span>` : ""}</span></button>`;
+      }).join("");
+      const n = R.picked.filter(Boolean).length;
+      $("#r-add").textContent = n ? `${n} op de lijst zetten` : "Niets gekozen";
+      $("#r-add").disabled = !n;
+      $("#r-allnone").textContent = n === R.picked.length ? "Niets" : "Alles";
+    };
+    draw();
+    $("#r-min").addEventListener("click", () => { if (R.servings > 1) { R.servings--; draw(); } });
+    $("#r-plus").addEventListener("click", () => { if (R.servings < 50) { R.servings++; draw(); } });
+    $("#r-ings").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; R.picked[b.dataset.i] = !R.picked[b.dataset.i]; draw(); });
+    $("#r-allnone").addEventListener("click", () => { const all = R.picked.every(Boolean); R.picked = R.picked.map(() => !all); draw(); });
+    $("#r-add").addEventListener("click", async () => {
+      const items = lines().filter((_, i) => R.picked[i]);
+      $("#r-add").disabled = true;
+      try {
+        const res = await api("POST", `/recipes/${r.id}/add`, { items }); buzz(); closeSheet(); await refresh();
+        const skipped = items.length - res.added;
+        toast(`${res.added} op de lijst · ${r.title}` + (skipped ? ` (${skipped} stond er al op)` : ""));
+      } catch (err) { toast(err.message); $("#r-add").disabled = false; }
+    });
+    $("#r-edit").addEventListener("click", () => recipeEditSheet(r));
+    $("#r-del").addEventListener("click", async () => {
+      try {
+        const res = await api("DELETE", "/recipes/" + r.id); buzz(); closeSheet(); await refresh();
+        undoToast(`${r.title} verwijderd`, "/recipes/restore", res.deleted, "r");
+      } catch (err) { toast(err.message); }
+    });
+  });
+}
+
+function recipeEditSheet(existing) {
+  openSheet(`
+    <h3>${existing ? "Recept bewerken" : "Nieuw recept"}</h3>
+    <div class="field"><label for="r-url">${existing ? "Link (mag leeg)" : "Link van een receptensite (mag leeg)"}</label>
+      <div class="quickadd"><input class="input" id="r-url" inputmode="url" placeholder="https://…" value="${esc(existing?.source_url || "")}" autocomplete="off">
+      <button class="btn" id="r-fetch" type="button" style="width:auto;flex:0 0 auto;padding:0 18px;border-radius:999px">Ophalen</button></div>
+      <div class="hint" id="r-fetchhint">${existing ? "" : "Werkt bij de meeste receptensites. Of vul het hieronder zelf in."}</div></div>
+    <div class="field"><label for="r-title">Naam</label><input class="input" id="r-title" maxlength="120" placeholder="Bijv. Stamppot boerenkool" value="${esc(existing?.title || "")}"></div>
+    <div class="field"><label for="r-serv">Voor hoeveel personen?</label><input class="input" id="r-serv" type="number" min="1" max="50" inputmode="numeric" value="${existing?.servings || 4}" style="max-width:120px"></div>
+    <div class="field"><label for="r-ing">Ingrediënten, één per regel</label>
+      <textarea class="input" id="r-ing" rows="8" placeholder="400 g spaghetti&#10;150 g spekjes&#10;3 eieren">${esc((existing?.ingredients || []).join("\n"))}</textarea>
+      <div class="hint">Zet de hoeveelheid vooraan, dan rekent de app hem om als je met meer of minder personen eet.</div></div>
+    <div class="field"><label for="r-steps">Bereiding (mag leeg)</label><textarea class="input" id="r-steps" rows="4">${esc(existing?.steps || "")}</textarea></div>
+    <button class="btn primary block" id="r-save">Opslaan</button>
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const sync = () => { $("#r-save").disabled = !$("#r-title").value.trim() || !$("#r-ing").value.trim(); };
+    sync();
+    ["#r-title", "#r-ing"].forEach(s => $(s).addEventListener("input", sync));
+    if (!existing) setTimeout(() => $("#r-url").focus(), 250);
+    const fetchIt = async () => {
+      const url = $("#r-url").value.trim(); if (!url) return $("#r-url").focus();
+      $("#r-fetch").disabled = true; $("#r-fetchhint").textContent = "Recept ophalen…";
+      try {
+        const r = await api("POST", "/recipes/import", { url });
+        $("#r-title").value = r.title; $("#r-serv").value = r.servings; $("#r-ing").value = r.ingredients.join("\n"); $("#r-steps").value = r.steps || "";
+        $("#r-fetchhint").textContent = `Gevonden: ${r.ingredients.length} ingrediënten. Pas aan wat je wilt en sla op.`; buzz(); sync();
+      } catch (err) { $("#r-fetchhint").textContent = err.message; }
+      finally { $("#r-fetch").disabled = false; }
+    };
+    $("#r-fetch").addEventListener("click", fetchIt);
+    $("#r-url").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); fetchIt(); } });
+    $("#r-save").addEventListener("click", async () => {
+      const body = { title: $("#r-title").value.trim(), servings: Math.min(50, Math.max(1, parseInt($("#r-serv").value, 10) || 4)),
+        ingredients: $("#r-ing").value.split("\n"), steps: $("#r-steps").value, source_url: $("#r-url").value.trim() || null };
+      $("#r-save").disabled = true;
+      try {
+        const saved = existing ? await api("PUT", "/recipes/" + existing.id, body) : await api("POST", "/recipes", body);
+        buzz(); await refresh(); toast(existing ? "Recept bijgewerkt" : "Recept bewaard");
+        recipeSheet(S.groceries.recipes.find(x => x.id === saved.id) || saved);
+      } catch (err) { toast(err.message); $("#r-save").disabled = false; }
+    });
+  });
+}
+
+// ------------------------------------------------------------ Home Assistant-koppeling
+function copyText(text) {
+  const done = () => toast("Gekopieerd");
+  if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text).then(done).catch(() => fallback());
+  fallback();
+  function fallback() {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy") ? done() : toast("Kopiëren lukte niet, selecteer de tekst zelf"); } catch { toast("Kopiëren lukte niet, selecteer de tekst zelf"); }
+    ta.remove();
+  }
+}
+
+function haSnippets(info) {
+  const base = `http://${info.host || "HOSTNAAM-VAN-DE-ADD-ON"}:${info.port}`;
+  const cmd = (name, path, field, varname) => `  ${name}:
+    url: "${base}${path}"
+    method: POST
+    headers:
+      Authorization: "Bearer ${info.key}"
+    content_type: "application/json"
+    payload: '{"${field}": "{{ ${varname} }}", "user": "{{ gebruiker }}"}'`;
+  const rest = `rest_command:\n${cmd("kostendeler_boodschap", "/api/ha/groceries", "name", "naam")}\n${cmd("kostendeler_taak_klaar", "/api/ha/tasks/complete", "task", "taak")}`;
+  const auto = (alias, action, field, value) => `alias: "${alias}"
+triggers:
+  - trigger: event
+    event_type: tag_scanned
+    event_data:
+      tag_id: "JOUW-TAG-ID"
+actions:
+  - action: rest_command.${action}
+    data:
+      ${field}: "${value}"
+      gebruiker: "{{ trigger.event.context.user_id }}"`;
+  return { rest, a1: auto("NFC: wc-papier bijna op", "kostendeler_boodschap", "naam", "Wc-papier"),
+    a2: auto("NFC: wc schoongemaakt", "kostendeler_taak_klaar", "taak", "Wc schoonmaken") };
+}
+
+function haSheet() {
+  const show = info => {
+    const sn = haSnippets(info);
+    const box = (id, title, text, hint) => `<div class="field"><div class="toggle-line"><span class="label">${title}</span><button class="linkbtn" data-copy="${id}">Kopiëren</button></div>
+      <textarea class="input copybox" id="${id}" readonly rows="${text.split("\n").length}">${esc(text)}</textarea>${hint ? `<div class="hint">${hint}</div>` : ""}</div>`;
+    return `<h3>NFC en automatiseringen</h3>
+      <p class="muted" style="margin:0 0 16px">Laat Home Assistant iets op de boodschappenlijst zetten of een taak afvinken, bijvoorbeeld als je je telefoon tegen een NFC-sticker houdt.</p>
+      ${box("ha-rest", "1 · In configuration.yaml", sn.rest, "Herstart Home Assistant daarna één keer. Bevat je sleutel, deel dit niet.")}
+      ${box("ha-a1", "2 · Automatisering: iets op de lijst", sn.a1, "Maak een sticker aan via <b>Instellingen → Tags</b> en zet het tag-ID op de plek van JOUW-TAG-ID. Plak dit als YAML in een nieuwe automatisering.")}
+      ${box("ha-a2", "3 · Automatisering: taak afvinken", sn.a2, "De taaknaam moet precies zo heten als in de app. Wie de sticker scant krijgt de punten.")}
+      <div class="row-actions"><button class="btn danger" id="ha-rotate">Nieuwe sleutel</button></div>
+      <div class="hint">Een nieuwe sleutel maakt de oude ongeldig: pas hem dan ook aan in configuration.yaml.</div>`;
+  };
+  openSheet(`<div class="loading" style="padding:30px 0">Laden…</div>`, async sheet => {
+    const load = async (rotate) => {
+      try {
+        const info = await api(rotate ? "POST" : "GET", "/ha-info");
+        sheet.innerHTML = `<div class="grip"></div>` + show(info);
+        sheet.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", () => copyText(sheet.querySelector("#" + b.dataset.copy).value)));
+        sheet.querySelector("#ha-rotate").addEventListener("click", () => { if (confirm("Nieuwe sleutel maken? De oude werkt dan niet meer.")) load(true).then(() => toast("Nieuwe sleutel gemaakt")); });
+      } catch (err) { toast(err.message); closeSheet(); }
+    };
+    load(false);
   });
 }
 
@@ -1000,6 +1512,16 @@ function renderStats() {
     <div class="col"><div class="card"><div class="card-head">${ICON.tag}<span class="sp">Per categorie</span></div>${cats}</div></div></div>`;
 }
 
+function haCard() {
+  if (S.notify === null || S.notify === undefined) return `<div class="hint" style="margin:0">Laden…</div>`;
+  if (!S.notify.available) return `<div class="hint" style="margin:0">Sensoren en automatiseringen werken alleen als de app als add-on in Home Assistant draait.</div>`;
+  const slugs = S.users.map(u => u.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "persoon");
+  const sensors = [...slugs.map(sl => "kostendeler_saldo_" + sl), "kostendeler_taken_vandaag", "kostendeler_taken_te_laat", "kostendeler_boodschappen"];
+  return `<div class="hint" style="margin:0 0 10px">De app zet deze sensoren in Home Assistant, voor je dashboard of automatiseringen (bijvoorbeeld een lamp die kleurt als er een taak te laat is):</div>
+    <div class="sensorlist">${sensors.map(x => `<code>sensor.${esc(x)}</code>`).join("")}</div>
+    <button class="btn" data-act="ha-setup" style="margin-top:14px">NFC en automatiseringen instellen</button>`;
+}
+
 function renderSettings() {
   const cats = S.categories.map(c => `<button class="settings-item" data-act="edit-cat" data-id="${c.id}">
     <span class="ico" style="width:36px;height:36px;flex-basis:36px;background:${tint(catColor(c.id), .16)}">${catIcon(c.icon)}</span>
@@ -1049,6 +1571,7 @@ function renderSettings() {
       <div class="hint">${S.ingress
         ? "Iedereen met een Home Assistant-account verschijnt hier zodra die de app één keer opent."
         : `Terugvalmodus (geen Home Assistant-login). <button class="linkbtn" data-act="switch-user">Wissel van gebruiker</button>`}</div></div>
+    <div class="card"><div class="card-head">${ICON.home}<span class="sp">Home Assistant</span></div>${haCard()}</div>
     <div class="card"><div class="card-head">${ICON.lock}<span class="sp">Privacy</span></div><div class="hint" style="margin:0">Alle gegevens staan in een SQLite-database op je eigen Home Assistant en gaan mee in de HA-back-ups. Er gaat niets naar buiten.</div></div></div></div>`;
 }
 
@@ -1217,6 +1740,9 @@ function expenseSheet(existing, recurring = false, prefill = null) {
         const saved = F.id ? await api("PUT", "/expenses/" + F.id, body) : await api("POST", "/expenses", body);
         S.fresh = "e" + saved.id; buzz();
         let msg = F.id ? "Bijgewerkt" : "Toegevoegd";
+        if (prefill?.groceryCheckout) {
+          try { const c = await api("POST", "/groceries/checkout", { expense_id: saved.id }); msg = `Afgerekend · ${c.count} ${c.count === 1 ? "boodschap" : "boodschappen"}`; } catch {}
+        }
         if (prefill?.taskId) {
           try { await api("POST", `/tasks/${prefill.taskId}/complete`, { today: todayISO() }); msg = "Toegevoegd en afgevinkt"; } catch {}
         }
@@ -1341,7 +1867,11 @@ function showWhoAmI() {
 }
 
 // ------------------------------------------------------------ events
-document.getElementById("fab").addEventListener("click", () => S.tab === "tasks" ? taskSheet(null) : expenseSheet(null));
+document.getElementById("fab").addEventListener("click", () => {
+  if (S.tab === "tasks") return taskSheet(null);
+  if (S.tab === "groceries") { window.scrollTo({ top: 0, behavior: reduceMotion() ? "auto" : "smooth" }); return document.getElementById("gqa-input")?.focus(); }
+  expenseSheet(null);
+});
 document.getElementById("tabs").addEventListener("click", async e => {
   const b = e.target.closest("[data-tab]"); if (!b) return;
   if (S.tab === b.dataset.tab) return;
@@ -1376,6 +1906,26 @@ document.getElementById("app").addEventListener("click", async e => {
   else if (act === "task-reopen") reopenTask(Number(b.dataset.id));
   else if (act === "edit-task") { const t = findTask(Number(b.dataset.id)); t && taskSheet(t); }
   else if (act === "toggle-done") { S.showDone = !S.showDone; render(); }
+  else if (act === "g-check") toggleGrocery(Number(b.dataset.id), b.closest(".task"));
+  else if (act === "g-edit") { const it = S.groceries.items.find(i => i.id === Number(b.dataset.id)); it && grocerySheet(it); }
+  else if (act === "g-staple") {
+    const it = onListByName(b.dataset.name);
+    b.classList.add("pop"); buzz();
+    (it && it.status === "open" ? api("DELETE", "/groceries/" + it.id).then(() => toast(`${it.name} van de lijst`))
+      : it ? Promise.resolve(toast(`${it.name} zit al in je mandje`)) : api("POST", "/groceries", { name: b.dataset.name }).then(r => { S.fresh = "g" + r.item.id; }))
+      .then(refresh).catch(err => toast(err.message));
+  }
+  else if (act === "g-staples") staplesSheet();
+  else if (act === "r-open") recipeSheet(S.groceries.recipes.find(r => r.id === Number(b.dataset.id)));
+  else if (act === "r-new") recipeEditSheet(null);
+  else if (act === "r-all") recipesAllSheet();
+  else if (act === "g-checkout") {
+    const names = S.groceries.items.filter(i => i.status === "basket").map(i => i.name);
+    expenseSheet(null, false, { description: groceryDescription(names), groceryCheckout: true });
+  }
+  else if (act === "g-clear") api("POST", "/groceries/checkout", {}).then(r => { buzz(); toast(`Mandje leeg · ${r.count} afgerond`); return refresh(); }).catch(err => toast(err.message));
+  else if (act === "open-settings") { S.tab = "settings"; S.animate = true; refresh().then(() => window.scrollTo(0, 0)).catch(err => toast(err.message)); }
+  else if (act === "ha-setup") haSheet();
   else if (act === "task-filter") {
     if (S.taskFilter === b.dataset.f) return;
     S.taskFilter = b.dataset.f; store.set("kostendeler-taskfilter", S.taskFilter); render();
@@ -1383,6 +1933,16 @@ document.getElementById("app").addEventListener("click", async e => {
 });
 // Snel een taak erbij: typ en druk op enter, het invoerveld blijft open voor de volgende.
 document.getElementById("app").addEventListener("submit", async e => {
+  if (e.target.id === "gqa") {
+    e.preventDefault();
+    const input = document.getElementById("gqa-input"), name = input.value.trim();
+    if (!name || S.qaBusy) return;
+    S.qaBusy = true;
+    try { input.value = ""; await addGrocery(name); }
+    catch (err) { input.value = name; toast(err.message); }
+    finally { S.qaBusy = false; }
+    return;
+  }
   if (e.target.id !== "qa") return;
   e.preventDefault();
   const input = document.getElementById("qa-input"), title = input.value.trim();
@@ -1408,6 +1968,10 @@ async function saveMe(patch, msg) {
 const prettySvc = n => cap(n.replace(/^mobile_app_/, "").replace(/_/g, " "));
 // Bijwerken als je terugkomt in de app (bijv. huisgenoot heeft iets toegevoegd).
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.me) refresh().catch(() => {}); });
+// Op Taken en Boodschappen elke 20 seconden bijwerken, zodat je ziet wat je huisgenoot net toevoegde of afvinkte.
+setInterval(() => {
+  if (!document.hidden && S.me && (S.tab === "groceries" || S.tab === "tasks") && !document.getElementById("ov")) refresh().catch(() => {});
+}, 20000);
 
 boot();
 </script>

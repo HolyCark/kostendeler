@@ -1,7 +1,7 @@
 name: Kostendeler
-version: "1.10.0"
+version: "1.12.0"
 slug: kostendeler
-description: Deel boodschappen en huishoudkosten met je huisgenoten en houd samen een takenlijst bij. Alles blijft op je eigen Home Assistant.
+description: Deel boodschappen en huishoudkosten met je huisgenoten en houd samen taken en de boodschappenlijst bij. Alles blijft op je eigen Home Assistant.
 arch:
   - aarch64
   - amd64

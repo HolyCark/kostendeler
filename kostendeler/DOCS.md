@@ -24,9 +24,17 @@ Tip: wil je huisgenoot verder weinig van Home Assistant zien? Die kan via **Prof
 - **Voor wie**: vink mensen aan of uit om gelijk te verdelen, of tik op *Bedragen aanpassen* voor een eigen verdeling. Iets alleen voor je huisgenoot? Vink jezelf uit.
 - **Afrekenen**: stuur een Tikkie, tik daarna op *Afrekenen* en het saldo staat weer op nul. Een deel afrekenen kan ook.
 - **Vaste kosten** (onder Instellingen): huur, internet, energie enzovoort. Kies bedrag, wie betaalt, de verdeling en de dag van de maand; de app zet ze er op die dag automatisch bij. Een bedrag dat een keer afwijkt pas je gewoon aan in de lijst. Pauzeren kan ook.
-- **Taken** (tabblad *Taken*): een gedeelde takenlijst voor jullie allebei. Typ bovenaan een taak en druk op enter voor snel toevoegen, bijvoorbeeld een boodschappenlijstje. Met **+** kies je ook voor wie de taak is, een deadline en of hij terugkomt (elke dag, week, 2 weken of maand). Vink een taak af met het rondje; vergist? Tik binnen 6 seconden op **Ongedaan maken**. Een terugkerende taak blijft staan met de eerstvolgende datum en laat zien wie hem de vorige keer deed. Boodschap gedaan? Tik op de taak en kies **Uitgave van maken**: de omschrijving is al ingevuld en de taak wordt na opslaan afgevinkt. Met *Mijn* zie je alleen wat voor jou of voor iedereen is. Afgevinkte taken staan nog 90 dagen onder *Toon afgerond*.
+- **Taken** (tabblad *Taken*): een gedeelde takenlijst. Typ bovenaan een taak en druk op enter, of tik op **+** voor meer opties:
+  - **Herhalen**: elke dag, week, 2 weken of maand. Afvinken zet de taak op de eerstvolgende datum.
+  - **Om de beurt** (bij een terugkerende taak): na elke keer afvinken is de ander aan de beurt. Bij *Nu aan de beurt* kies je wie begint.
+  - **Zwaarte** (1–5 punten): telt mee in het **takensaldo**, dat per maand laat zien wie hoeveel deed. Het staat ook in het maandrapport.
+  - **Overdragen**: tik op een taak. Bij om de beurt kun je **ruilen** (de ander doet nu, jij daarna de beurt van de ander) of **afkopen** (de ander doet het en jij betaalt een bedrag, dat als uitgave in het saldo komt). Bij andere taken kan het met of zonder vergoeding.
+  - **Uitgave**: maakt van een taak meteen een uitgave en vinkt hem af.
+  Vergist bij het afvinken? Tik binnen 6 seconden op **Ongedaan maken**. Met *Mijn* zie je alleen wat voor jou of voor iedereen is.
+- **Boodschappen** (tabblad *Boodschappen*): typ wat er nodig is (eerdere boodschappen worden voorgesteld). Onder **Bijna op?** staan vaste spullen: één tik en het staat op de lijst; via *Bewerken* pas je ze aan. In de winkel vink je af wat je pakt; het gaat naar *In je mandje*. Bij de kassa tik je op **Bedrag invullen**: alles in je mandje wordt één uitgave. De lijst ververst vanzelf, dus je ziet wat je huisgenoot intussen toevoegt.
+- **Recepten** (onder *Boodschappen*): tik op *Nieuw* en plak een link van een receptensite en tik op **Ophalen**, of vul naam, personen en ingrediënten (één per regel) zelf in. Open een recept, kies voor hoeveel personen je kookt (de hoeveelheden rekenen mee) en vink aan wat je moet halen. Wat al op de lijst staat en dingen als zout, peper en olie staan standaard uit. Met **op de lijst zetten** gaat alles in één keer op de boodschappenlijst. Recepten die je vaak gebruikt staan vooraan. Sommige sites (zoals die van grote supermarkten) blokkeren het ophalen; vul de ingrediënten dan zelf in.
 - **Cijfers**: per maand of per jaar het totaal, wie wat betaalde, uitgaven per categorie en een grafiek. In het jaaroverzicht zie je ook het gemiddelde per maand.
-- **Instellingen**: categorieën toevoegen (met een eigen icoon), hernoemen of verbergen.
+- **Instellingen** (op de telefoon via je avatar op het overzicht): categorieën toevoegen (met een eigen icoon), hernoemen of verbergen.
 
 Tik op een uitgave om hem te bewerken of te verwijderen. Verwijderd per ongeluk? Tik binnen 6 seconden op **Ongedaan maken**.
 
@@ -39,6 +47,12 @@ Ga in de app naar **Instellingen → Meldingen** en kies je telefoon (die versch
 - **Nieuwe taak voor jou**: zodra je huisgenoot een taak aan jou geeft. Taken die je aan jezelf of aan iedereen geeft, sturen geen melding.
 
 Met **Test rapport** en **Test taken** kun je het meteen proberen. Je huisgenoot stelt dit in op zijn of haar eigen account.
+
+## Home Assistant: sensoren en NFC
+
+De app zet deze sensoren in Home Assistant en houdt ze bij: `sensor.kostendeler_saldo_<naam>` (per persoon), `sensor.kostendeler_taken_vandaag`, `sensor.kostendeler_taken_te_laat` en `sensor.kostendeler_boodschappen` (met de items als attribuut). Gebruik ze op je dashboard of in automatiseringen, bijvoorbeeld een lamp die oranje kleurt als `taken_te_laat` boven 0 komt. Na een herstart van Home Assistant zijn ze binnen een minuut terug.
+
+Wil je met een **NFC-sticker** iets op de boodschappenlijst zetten of een taak afvinken? Ga naar **Instellingen → Home Assistant → NFC en automatiseringen instellen**. Daar staat kant-en-klare YAML met je eigen adres en sleutel: een `rest_command` voor `configuration.yaml` en twee voorbeeldautomatiseringen. Wie de sticker scant, krijgt de punten. De koppeling werkt alleen vanaf Home Assistant zelf en andere add-ons (zoals Node-RED), en alleen met de sleutel.
 
 ## Donkere modus
 
