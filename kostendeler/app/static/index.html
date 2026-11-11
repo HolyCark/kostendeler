@@ -225,6 +225,42 @@
   /* Op de telefoon zit Instellingen achter je avatar op het overzicht. */
   @media (max-width: 899px) { nav.tabs .tab[data-tab="settings"] { display: none; } }
 
+  /* weekmenu */
+  #gmenu { margin-top: 12px; }
+  .weeknav { display: flex; align-items: center; gap: 6px; }
+  .weeknav .iconbtn { width: 32px; height: 32px; box-shadow: none; font-size: 17px; }
+  .weeknav .wl { font-size: 13px; color: var(--muted); min-width: 86px; text-align: center; }
+  .mdays { border-radius: 16px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+  .mday { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 9px 14px; color: inherit; font: inherit; min-height: 52px; }
+  .mday:first-child { border-top: 0; }
+  .mday .dow { flex: 0 0 38px; display: grid; justify-items: center; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); line-height: 1.15; }
+  .mday .dow b { font-size: 17px; font-weight: 500; color: var(--text); letter-spacing: 0; }
+  .mday.today .dow, .mday.today .dow b { color: var(--acc); }
+  .mday.today { background: var(--acc-soft); }
+  .mday.past { opacity: .5; }
+  .mday .what { flex: 1; min-width: 0; line-height: 1.3; overflow-wrap: anywhere; }
+  .mday .what .meta { display: block; font-size: 12px; color: var(--muted); }
+  .check.mini { width: 20px; height: 20px; flex: 0 0 20px; box-shadow: none; }
+  .check.mini svg { width: 12px; height: 12px; }
+  .chip.static { cursor: default; }
+  .list.flat { background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; margin: -6px -14px -8px -6px; }
+  .rail { display: none; }
+  .keys { display: none; }
+
+  /* betaalverzoek */
+  .paybox { display: flex; gap: 16px; align-items: center; margin: 0 0 18px; padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
+  .paybox .qr { flex: 0 0 148px; width: 148px; height: 148px; border-radius: 12px; overflow: hidden; background: #fff; display: grid; place-items: center; text-align: center; font-size: 13px; padding: 0; }
+  .paybox .qr svg { width: 100%; height: 100%; display: block; }
+  .paybox .qr .muted { color: #6c727c; padding: 10px; }
+  .paydata { flex: 1; min-width: 0; }
+  .copyrow { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 7px 0; color: inherit; font: inherit; }
+  .copyrow span { flex: 1; min-width: 0; font-size: 14px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+  .copyrow small { display: block; font-size: 11px; color: var(--muted); }
+  .copyrow b { font-weight: 500; }
+  .copyrow em { font-style: normal; font-size: 12px; color: var(--acc); font-weight: 500; }
+  @media (max-width: 430px) { .paybox { flex-direction: column; align-items: stretch; } .paybox .qr { align-self: center; flex-basis: auto; width: 190px; height: 190px; } }
+
+  #md-list .settings-item, #r-list .settings-item { padding-left: 14px; padding-right: 14px; }
   /* recepten */
   #grecipes { margin-top: 12px; }
   .stepper { display: flex; align-items: center; gap: 12px; }
@@ -400,6 +436,18 @@
     .big { font-size: 48px; }
     .chart svg { height: 200px; }
 
+    /* boodschappen: toevoegen en weekmenu links, de lijst rechts */
+    .gcols { grid-template-areas: "a b" "c b"; grid-template-rows: auto 1fr; }
+    .gcols .ga { grid-area: a; } .gcols .gb { grid-area: b; } .gcols .gc { grid-area: c; }
+    .gcols #gmenu { margin-top: 0; }
+    .keys { display: grid; gap: 7px; margin-top: auto; padding: 14px 10px 2px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+    .keys b { font-weight: 500; color: var(--strong); margin-bottom: 2px; }
+    .keys kbd { font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 1px 6px; border-radius: 6px; background: var(--surface); border: 1px solid var(--field-border); color: var(--strong); }
+    .card { padding: 22px; }
+    .item, .task, .settings-item, .mday, .ing { cursor: pointer; }
+    .sheet { scrollbar-width: thin; }
+    :focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
     .overlay { align-items: center; padding: 24px; }
     .sheet { max-width: 520px; max-height: 88vh; border-radius: 28px; border: 1px solid var(--sheet-border); padding: 24px 26px 24px;
       animation: dialogIn .26s cubic-bezier(.2, 1.1, .35, 1); }
@@ -410,6 +458,13 @@
   }
   @media (min-width: 1240px) {
     .cols { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+    .sheet { max-width: 560px; }
+  }
+  @media (min-width: 1480px) {
+    .app { max-width: 1760px; padding-right: 52px; }
+    .cols.three { grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 8fr); }
+    .rail { display: block; position: sticky; top: 40px; }
+    .gcols { grid-template-areas: "a b c"; grid-template-columns: minmax(0, 7fr) minmax(0, 9fr) minmax(0, 9fr); grid-template-rows: auto; }
   }
   @media (hover: hover) {
     .item:hover, .settings-item:hover, .task:hover { background: rgba(30, 34, 39, .035); }
@@ -470,10 +525,12 @@
   <button class="tab" data-tab="groceries" aria-label="Boodschappen"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1.2 11a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span>Boodschappen</span></button>
   <button class="tab" data-tab="stats" aria-label="Cijfers"><svg viewBox="0 0 24 24"><path d="M5 19V11M10 19V6M15 19v-6M20 19V9"/></svg><span>Cijfers</span></button>
   <button class="tab" data-tab="settings" aria-label="Instellingen"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Instellingen</span></button>
+  <div class="keys"><b>Sneltoetsen</b><span><kbd>N</kbd> nieuw</span><span><kbd>1</kbd>–<kbd>5</kbd> tabbladen</span><span><kbd>/</kbd> snel toevoegen</span><span><kbd>←</kbd> <kbd>→</kbd> maand</span><span><kbd>Esc</kbd> sluiten</span></div>
 </nav>
 <div id="overlay-root"></div>
 <div id="toast-root"></div>
 
+<script src="qrcode.js"></script>
 <script>
 "use strict";
 // ------------------------------------------------------------ basis
@@ -541,7 +598,7 @@ const S = {
   me: null, ingress: true, users: [], categories: [],
   tab: "home", month: thisMonth(), counts: {}, firstPaint: true, animate: true, fresh: null, recurring: [], statsMode: "month", year: new Date().getFullYear(), ysummary: null, notify: undefined,
   balances: {}, suggestions: [], activity: { expenses: [], settlements: [] }, summary: null,
-  tasks: { open: [], done: [], points: null }, groceries: { items: [], staples: [], suggestions: [], recipes: [] }, taskFilter: store.get("kostendeler-taskfilter") === "mine" ? "mine" : "all", showDone: false,
+  tasks: { open: [], done: [] }, groceries: { items: [], staples: [], suggestions: [], recipes: [], menu: [] }, menuWeek: 0, taskFilter: store.get("kostendeler-taskfilter") === "mine" ? "mine" : "all", showDone: false,
 };
 
 async function api(method, path, body) {
@@ -645,7 +702,6 @@ function render() {
   // Taken: alleen de lijst verversen, zodat het invoerveld zijn focus (en het toetsenbord) houdt.
   if (S.tab === "tasks" && app.dataset.view === "tasks" && !S.animate && document.getElementById("tasklist")) {
     document.getElementById("tasklist").innerHTML = renderTaskList();
-    document.getElementById("taskscore").innerHTML = renderTaskScore();
     document.getElementById("taskdone").innerHTML = renderTaskDone();
     document.getElementById("taskseg").innerHTML = taskSegInner();
     S.fresh = null;
@@ -656,6 +712,7 @@ function render() {
     document.getElementById("glist").innerHTML = renderGroceryList();
     document.getElementById("gstaples").innerHTML = renderStaples();
     document.getElementById("grecipes").innerHTML = renderRecipes();
+    document.getElementById("gmenu").innerHTML = renderMenu();
     document.getElementById("gcount").textContent = n ? `${n} nodig` : "Alles in huis";
     document.getElementById("gsugg").innerHTML = S.groceries.suggestions.map(x => `<option value="${esc(x)}">`).join("");
     S.fresh = null;
@@ -803,7 +860,7 @@ function renderHome() {
     }
     if (open) list += `</div>`;
   }
-  return header + `<div class="cols"><div class="col col-side">${renderHero()}${renderTiles()}</div><div class="col">${monthNav()}${list}</div></div>`;
+  return header + `<div class="cols three"><div class="col col-side">${renderHero()}${renderTiles()}</div><div class="col">${monthNav()}${list}</div>${renderRail()}</div>`;
 }
 
 // ------------------------------------------------------------ taken
@@ -853,7 +910,6 @@ function taskRow(t, isDone) {
     if (t.repeat_unit) bits.push(`<span>${REPEAT_ICON.replace(' rep"', '"')}${esc(repeatText(t))}</span>`);
     if (t.rotation && t.upcoming) bits.push(`<span>${ROTATE_ICON}daarna ${esc(firstName(t.upcoming))}</span>`);
     else if (t.repeat_unit && t.done_by) bits.push(`<span>laatst door ${esc(nameObj(t.done_by))}</span>`);
-    if (t.points > 1) bits.push(`<span>${t.points} punten</span>`);
   }
   const who = t.assigned_to ? `<span class="tav ucol" style="${ucol(t.assigned_to)}" title="${esc(nameOf(t.assigned_to, true))}">${esc(initials(user(t.assigned_to)?.name))}</span>` : "";
   return `<div class="task ${isDone ? "is-done" : ""} ${S.fresh === "t" + t.id ? "fresh" : ""}">
@@ -879,28 +935,6 @@ function renderTaskList() {
     `<div class="day ${cls}">${label}</div><div class="list">${items.map(t => taskRow(t, false)).join("")}</div>`).join("");
 }
 
-// Takensaldo: wie deed deze maand hoeveel (in punten).
-function renderTaskScore() {
-  const per = S.tasks.points?.per_user || {};
-  const rows = S.users.map(u => ({ id: u.id, ...(per[u.id] || { points: 0, count: 0 }) }));
-  const total = rows.reduce((a, r) => a + r.points, 0);
-  if (S.users.length < 2 && !total) return "";
-  const max = Math.max(1, ...rows.map(r => r.points));
-  const sorted = [...rows].sort((a, b) => b.points - a.points);
-  let verdict = "Nog niets afgevinkt deze maand.";
-  if (total) {
-    const diff = sorted[0].points - (sorted[1]?.points || 0);
-    verdict = diff === 0 ? "Jullie staan gelijk." : sorted[0].id === S.me ? `Jij loopt ${diff} ${diff === 1 ? "punt" : "punten"} voor.`
-      : `${esc(firstName(sorted[0].id).replace(/^./, c => c.toUpperCase()))} loopt ${diff} ${diff === 1 ? "punt" : "punten"} voor.`;
-  }
-  const month = S.tasks.points?.month || thisMonth();
-  return `<div class="card score"><div class="card-head">${ICON.bars}<span class="sp">Takensaldo</span><span class="status">${esc(cap(monthLabel(month).split(" ")[0]))}</span></div>
-    ${rows.map(r => `<div class="cat-row"><div class="top"><span>${esc(nameOf(r.id, true))}</span><b class="tnum">${r.points} <span class="muted" style="font-size:13px">${r.points === 1 ? "punt" : "punten"}</span></b></div>
-      <div class="bar"><i style="width:${Math.round(r.points / max * 100)}%;background:${userColor(r.id)}"></i></div>
-      <div class="sub tnum">${r.count} ${r.count === 1 ? "taak" : "taken"} gedaan</div></div>`).join("")}
-    <div class="hint">${verdict} Zwaardere taken tellen voor meer punten.</div></div>`;
-}
-
 function renderTaskDone() {
   const { done } = visibleTasks();
   if (!done.length) return "";
@@ -918,7 +952,7 @@ function renderTasks() {
       <form class="quickadd" id="qa" autocomplete="off"><input class="input" id="qa-input" placeholder="Nieuwe taak…" maxlength="200" enterkeyhint="done" aria-label="Nieuwe taak">
         <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
       <div id="tasklist">${renderTaskList()}</div></div>
-    <div class="col col-side"><div id="taskscore">${renderTaskScore()}</div><div id="taskdone">${renderTaskDone()}</div></div></div>`;
+    <div class="col col-side"><div id="taskdone">${renderTaskDone()}</div></div></div>`;
 }
 
 async function completeTask(id, row) {
@@ -929,10 +963,10 @@ async function completeTask(id, row) {
     const [r] = await Promise.all([api("POST", `/tasks/${id}/complete`, { today: todayISO() }),
       new Promise(res => setTimeout(res, reduceMotion() ? 0 : 420))]);
     await refresh();
-    const t = r.task, pts = t.points > 1 ? ` (+${t.points})` : "";
+    const t = r.task;
     const msg = t.repeat_unit
-      ? (t.rotation && t.assigned_to !== S.me ? `Klaar${pts}, nu ${firstName(t.assigned_to)} · ${taskDue(t.due_date).toLowerCase()}` : `Klaar${pts}, volgende keer ${taskDue(t.due_date).toLowerCase()}`)
-      : `Afgevinkt${pts}`;
+      ? (t.rotation && t.assigned_to !== S.me ? `Klaar, nu ${firstName(t.assigned_to)} · ${taskDue(t.due_date).toLowerCase()}` : `Klaar, volgende keer ${taskDue(t.due_date).toLowerCase()}`)
+      : "Afgevinkt";
     toast(msg, { label: "Ongedaan maken", fn: async () => {
       try { await api("POST", `/tasks/${id}/undo`, { previous: r.previous, log_id: r.log_id }); buzz(); await refresh(); toast("Teruggezet"); }
       catch (err) { toast(err.message); }
@@ -949,8 +983,8 @@ function taskSheet(existing) {
   const ids = S.users.map(u => u.id);
   const T = existing
     ? { id: existing.id, who: existing.rotation ? "rot" : existing.assigned_to, turn: existing.turn_user || existing.assigned_to || S.me,
-        rep: existing.repeat_unit ? `${existing.repeat_unit}:${existing.repeat_every}` : "", points: existing.points || 1 }
-    : { id: null, who: null, turn: S.me, rep: "", points: 1 };
+        rep: existing.repeat_unit ? `${existing.repeat_unit}:${existing.repeat_every}` : "" }
+    : { id: null, who: null, turn: S.me, rep: "" };
   const repOpts = [...REPEAT_OPTS];
   if (T.rep && !repOpts.some(o => o[0] === T.rep)) repOpts.push([T.rep, cap(repeatText(existing))]);
   const canRotate = ids.length >= 2;
@@ -966,8 +1000,6 @@ function taskSheet(existing) {
     <div class="field"><label for="t-due">${existing?.repeat_unit ? "Volgende keer" : "Deadline"}</label>
       <input class="input" type="date" id="t-due" value="${esc(existing?.due_date || "")}">
       <div class="chips" id="t-quick" style="margin-top:10px"></div></div>
-    <div class="field"><span class="label">Zwaarte</span><div class="chips" id="t-pts"></div>
-      <div class="hint">Telt mee in het takensaldo: een licht klusje 1 punt, de wc schoonmaken bijvoorbeeld 3.</div></div>
     <button class="btn primary block" id="t-save">Opslaan</button>
     ${existing ? `<div class="row-actions">${!existing.done && canRotate ? `<button class="btn" id="t-move">Overdragen</button>` : ""}${existing.done ? "" : `<button class="btn" id="t-exp">Uitgave</button>`}<button class="btn danger" id="t-del">Verwijderen</button></div>` : ""}
   `, sheet => {
@@ -983,12 +1015,11 @@ function taskSheet(existing) {
     };
     const drawQuick = () => $("#t-quick").innerHTML = [["Vandaag", todayISO()], ["Morgen", addDaysISO(1)], ["Geen datum", ""]].map(([l, v]) =>
       `<button class="chip ${$("#t-due").value === v ? "on" : ""}" data-d="${v}">${l}</button>`).join("");
-    const drawPts = () => $("#t-pts").innerHTML = [1, 2, 3, 4, 5].map(n => `<button class="chip pt ${T.points === n ? "on" : ""}" data-p="${n}">${n}</button>`).join("");
     const sync = () => {
       $("#t-save").disabled = !$("#t-title").value.trim();
       $("#t-rephint").textContent = $("#t-rep").value ? "Vink je hem af, dan komt hij vanzelf terug op de eerstvolgende datum." : "";
     };
-    drawWho(); drawQuick(); drawPts(); sync();
+    drawWho(); drawQuick(); sync();
     if (!existing) setTimeout(() => $("#t-title").focus(), 250);
 
     $("#t-title").addEventListener("input", sync);
@@ -1000,10 +1031,6 @@ function taskSheet(existing) {
     $("#t-turn").addEventListener("click", e => {
       const b = e.target.closest("[data-t]"); if (!b) return;
       T.turn = b.dataset.t; drawWho(); popSel(`#t-turn [data-t="${CSS.escape(b.dataset.t)}"]`);
-    });
-    $("#t-pts").addEventListener("click", e => {
-      const b = e.target.closest("[data-p]"); if (!b) return;
-      T.points = Number(b.dataset.p); drawPts(); popSel(`#t-pts [data-p="${b.dataset.p}"]`);
     });
     $("#t-quick").addEventListener("click", e => {
       const b = e.target.closest("[data-d]"); if (!b) return;
@@ -1020,7 +1047,7 @@ function taskSheet(existing) {
     $("#t-save").addEventListener("click", async () => {
       const [unit, every] = $("#t-rep").value ? $("#t-rep").value.split(":") : [null, 1];
       const body = { title: $("#t-title").value.trim(), assigned_to: T.who === "rot" ? null : T.who, due_date: $("#t-due").value || null,
-        repeat_unit: unit, repeat_every: Number(every), points: T.points, rotation: null };
+        repeat_unit: unit, repeat_every: Number(every), rotation: null };
       if (T.who === "rot") {
         // Bestaande volgorde houden; wie nu aan de beurt is, bepaal je zelf.
         body.rotation = existing?.rotation && existing.rotation.length === ids.length && ids.every(i => existing.rotation.includes(i)) ? existing.rotation : ids;
@@ -1136,13 +1163,13 @@ function renderGroceries() {
   const n = S.groceries.items.filter(i => i.status === "open").length;
   return `<header class="hello"><div class="txt"><div class="date">Kostendeler</div><h1>Boodschappen</h1></div>
       <span class="status tnum" id="gcount">${n ? `${n} nodig` : "Alles in huis"}</span></header>
-    <div class="cols"><div class="col col-side">
+    <div class="cols gcols"><div class="col ga">
       <form class="quickadd" id="gqa" autocomplete="off"><input class="input" id="gqa-input" placeholder="Wat is er nodig?" maxlength="80" enterkeyhint="done" aria-label="Boodschap toevoegen" list="gsugg">
         <button class="btn primary" type="submit" aria-label="Toevoegen">${PLUS_ICON}</button></form>
       <datalist id="gsugg">${S.groceries.suggestions.map(s => `<option value="${esc(s)}">`).join("")}</datalist>
-      <div id="gstaples" style="margin-top:12px">${renderStaples()}</div>
-      <div id="grecipes">${renderRecipes()}</div></div>
-    <div class="col"><div id="glist">${renderGroceryList()}</div></div></div>`;
+      <div id="gstaples" style="margin-top:12px">${renderStaples()}</div></div>
+    <div class="col gb"><div id="glist">${renderGroceryList()}</div></div>
+    <div class="col gc"><div id="gmenu">${renderMenu()}</div><div id="grecipes">${renderRecipes()}</div></div></div>`;
 }
 
 function groceryDescription(names) {
@@ -1385,6 +1412,199 @@ function recipeEditSheet(existing) {
   });
 }
 
+// ------------------------------------------------------------ weekmenu
+const CAL_ICON = '<svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="3"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>';
+const isoOf = d => { const x = new Date(d); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0, 10); };
+function weekDays(offset) {
+  const d = new Date(todayISO() + "T12:00");
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7); // maandag
+  return Array.from({ length: 7 }, (_, i) => { const x = new Date(d); x.setDate(d.getDate() + i); return isoOf(x); });
+}
+const menuOf = day => (S.groceries.menu || []).find(m => m.day === day);
+const menuPending = days => days.map(menuOf).filter(m => m && m.recipe_id && !m.listed && m.day >= todayISO());
+function weekLabel(days) {
+  if (S.menuWeek === 0) return "Deze week";
+  if (S.menuWeek === 1) return "Volgende week";
+  const a = new Date(days[0] + "T12:00"), b = new Date(days[6] + "T12:00");
+  const mon = x => x.toLocaleDateString("nl-NL", { month: "short" }).replace(".", "");
+  return a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${mon(b)}` : `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)}`;
+}
+
+function renderMenu() {
+  const days = weekDays(S.menuWeek), today = todayISO();
+  const pending = menuPending(days);
+  const rows = days.map(day => {
+    const m = menuOf(day), d = new Date(day + "T12:00");
+    const meta = m ? (m.recipe_id ? `${m.servings} pers.${m.listed ? " · op de lijst" : ""}` : "") : "";
+    return `<button class="mday ${day === today ? "today" : ""} ${day < today ? "past" : ""}" data-act="m-day" data-day="${day}">
+      <span class="dow">${d.toLocaleDateString("nl-NL", { weekday: "short" }).replace(".", "")}<b>${d.getDate()}</b></span>
+      <span class="what ${m ? "" : "muted"}">${m ? esc(m.title || "Recept") : "Kies een recept"}${meta ? `<span class="meta">${esc(meta)}</span>` : ""}</span>
+      ${m && m.listed ? `<span class="check on mini">${CHECK_ICON}</span>` : ""}</button>`;
+  }).join("");
+  return `<div class="card menu"><div class="card-head">${CAL_ICON}<span class="sp">Weekmenu</span>
+      <span class="weeknav"><button class="iconbtn" data-act="m-prev" aria-label="Vorige week" ${S.menuWeek <= -1 ? "disabled" : ""}>‹</button>
+      <span class="wl">${esc(weekLabel(days))}</span><button class="iconbtn" data-act="m-next" aria-label="Volgende week" ${S.menuWeek >= 3 ? "disabled" : ""}>›</button></span></div>
+    <div class="mdays">${rows}</div>
+    <button class="btn ${pending.length ? "primary" : ""} block" data-act="m-list" ${pending.length ? "" : "disabled"} style="margin-top:14px">${pending.length
+      ? `Boodschappen voor ${pending.length} ${pending.length === 1 ? "dag" : "dagen"} op de lijst` : "Boodschappen op de lijst zetten"}</button>
+    <div class="hint">${pending.length ? "Dubbele ingrediënten worden samengevoegd." : "Kies per dag een recept. Daarna zet je alles voor de week in één keer op de lijst."}</div></div>`;
+}
+
+function menuDaySheet(day) {
+  const cur = menuOf(day);
+  const D = { servings: cur?.servings || Math.max(1, S.users.length) };
+  const label = cap(new Date(day + "T12:00").toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }));
+  const MINUS = '<svg class="ci" viewBox="0 0 24 24"><path d="M6 12h12"/></svg>';
+  openSheet(`
+    <h3>${esc(label)}</h3>
+    <div class="split-row" style="margin-bottom:12px"><span class="who">Personen</span>
+      <div class="stepper"><button class="iconbtn" id="md-min" aria-label="Minder">${MINUS}</button><b class="tnum" id="md-n"></b><button class="iconbtn" id="md-plus" aria-label="Meer">${PLUS_ICON}</button></div></div>
+    ${S.groceries.recipes.length ? `<input class="input" id="md-search" placeholder="Zoek een recept…" style="margin-bottom:12px"><div class="list" id="md-list"></div>`
+      : `<div class="hint" style="margin:0 0 12px">Je hebt nog geen recepten. Voeg er eerst een toe, of vul hieronder iets anders in.</div><button class="btn block" id="md-newrecipe">Nieuw recept</button>`}
+    <div class="field" style="margin-top:16px"><label for="md-free">Iets anders</label>
+      <form class="quickadd" id="md-form" autocomplete="off"><input class="input" id="md-free" maxlength="80" placeholder="Bijv. Restjes of uit eten" value="${cur && !cur.recipe_id ? esc(cur.title || "") : ""}">
+      <button class="btn primary" type="submit" aria-label="Opslaan">${CHECK_ICON}</button></form></div>
+    ${cur ? `<div class="row-actions">${cur.recipe_id ? `<button class="btn" id="md-open">Recept bekijken</button>` : ""}<button class="btn danger" id="md-clear">Leegmaken</button></div>` : ""}
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const put = async body => { await api("PUT", "/menu/" + day, { ...body, servings: D.servings }); buzz(); await refresh(); };
+    const drawN = () => $("#md-n").textContent = D.servings;
+    const drawList = () => {
+      if (!$("#md-list")) return;
+      const q = $("#md-search").value.trim().toLowerCase();
+      const rs = S.groceries.recipes.filter(r => !q || r.title.toLowerCase().includes(q) || r.ingredients.some(i => i.toLowerCase().includes(q)));
+      $("#md-list").innerHTML = rs.map(r => `<button class="settings-item" data-id="${r.id}"><span class="sp">${esc(r.title)}</span>${cur?.recipe_id === r.id ? `<span class="check on mini">${CHECK_ICON}</span>` : `<span class="muted" style="font-size:13px">${r.ingredients.length} ingr.</span>`}</button>`).join("")
+        || `<div class="empty">Niets gevonden.</div>`;
+    };
+    drawN(); drawList();
+    const step = async by => {
+      const n = D.servings + by; if (n < 1 || n > 50) return;
+      D.servings = n; drawN();
+      // Staat er al iets gepland, dan meteen het aantal personen bijwerken.
+      if (cur) try { await put(cur.recipe_id ? { recipe_id: cur.recipe_id } : { title: cur.title }); } catch (err) { toast(err.message); }
+    };
+    $("#md-min").addEventListener("click", () => step(-1));
+    $("#md-plus").addEventListener("click", () => step(1));
+    $("#md-search") && $("#md-search").addEventListener("input", drawList);
+    $("#md-list") && $("#md-list").addEventListener("click", async e => {
+      const b = e.target.closest("[data-id]"); if (!b) return;
+      try { await put({ recipe_id: Number(b.dataset.id) }); closeSheet(); } catch (err) { toast(err.message); }
+    });
+    $("#md-newrecipe") && $("#md-newrecipe").addEventListener("click", () => recipeEditSheet(null));
+    $("#md-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = $("#md-free").value.trim(); if (!title) return;
+      try { await put({ title }); closeSheet(); } catch (err) { toast(err.message); }
+    });
+    $("#md-open") && $("#md-open").addEventListener("click", () => recipeSheet(S.groceries.recipes.find(r => r.id === cur.recipe_id)));
+    $("#md-clear") && $("#md-clear").addEventListener("click", async () => {
+      try { await api("DELETE", "/menu/" + day); buzz(); closeSheet(); await refresh(); } catch (err) { toast(err.message); }
+    });
+  });
+}
+
+// Ingrediënten van meerdere recepten samenvoegen: zelfde naam en eenheid wordt één regel.
+const UNIT_ALIAS = { gr: "g", gram: "g", kilo: "kg", liter: "l", eetlepel: "el", eetlepels: "el", theelepel: "tl", theelepels: "tl", st: "stuks", stuk: "stuks",
+  blikje: "blik", blikjes: "blik", zakje: "zak", zakjes: "zak", pakje: "pak", pakjes: "pak", teentje: "teen", teentjes: "teen", bosje: "bos" };
+const stem = n => n.length > 3 ? n.replace(/(en|s)$/, "") : n; // ui/uien, wortel/wortels
+function mergeIngredients(lines) {
+  const out = new Map();
+  for (const line of lines) {
+    const q = parseQty(line), rest = (q ? q.rest : line).trim();
+    const um = rest.match(UNITS);
+    const unit = um ? (UNIT_ALIAS[um[1].toLowerCase()] || um[1].toLowerCase()) : "";
+    const name = ingName(line);
+    const key = (q ? unit : "#") + "|" + stem(name);
+    const hit = out.get(key);
+    if (!hit) { out.set(key, { v: q?.v ?? null, to: q?.to ?? null, rest, name, n: 1 }); continue; }
+    hit.n++;
+    if (rest.length > hit.rest.length) hit.rest = rest; // meervoud wint: "3 uien" in plaats van "3 ui"
+    if (q) {
+      if (hit.to != null || q.to != null) hit.to = (hit.to ?? hit.v) + (q.to ?? q.v);
+      hit.v += q.v;
+    }
+  }
+  return [...out.values()].map(x => ({ name: x.name, n: x.n,
+    text: x.v == null ? x.rest : fmtQty(x.v) + (x.to != null ? "-" + fmtQty(x.to) : "") + (x.rest && !/^[,.)]/.test(x.rest) ? " " : "") + x.rest }));
+}
+
+function menuListSheet() {
+  const entries = menuPending(weekDays(S.menuWeek));
+  if (!entries.length) return;
+  const lines = [], titles = [];
+  for (const m of entries) {
+    const r = S.groceries.recipes.find(x => x.id === m.recipe_id); if (!r) continue;
+    titles.push(r.title);
+    r.ingredients.forEach(l => lines.push(scaleLine(l, m.servings / r.servings)));
+  }
+  const merged = mergeIngredients(lines);
+  const onList = new Set(S.groceries.items.map(i => ingName(i.name)));
+  const picked = merged.map(x => !onList.has(x.name) && !PANTRY.test(x.name));
+  openSheet(`
+    <h3>Boodschappen voor de week</h3>
+    <p class="muted" style="margin:-6px 0 14px">${esc(titles.join(" · "))}</p>
+    <div class="toggle-line" style="margin:0 0 6px"><span class="label">Wat moet je halen?</span><button class="linkbtn" id="ml-allnone"></button></div>
+    <div class="ings" id="ml-ings"></div>
+    <button class="btn primary block" id="ml-add" style="margin-top:16px"></button>
+  `, sheet => {
+    const $ = s => sheet.querySelector(s);
+    const draw = () => {
+      $("#ml-ings").innerHTML = merged.map((x, i) => {
+        const note = onList.has(x.name) ? "staat al op de lijst" : PANTRY.test(x.name) ? "heb je waarschijnlijk al" : x.n > 1 ? `uit ${x.n} recepten samengevoegd` : "";
+        return `<button class="ing ${picked[i] ? "" : "off"}" data-i="${i}"><span class="check ${picked[i] ? "on" : ""}">${CHECK_ICON}</span>
+          <span class="txt">${esc(x.text)}${note ? `<span class="muted">${note}</span>` : ""}</span></button>`;
+      }).join("");
+      const n = picked.filter(Boolean).length;
+      $("#ml-add").textContent = n ? `${n} op de lijst zetten` : "Niets gekozen";
+      $("#ml-add").disabled = !n;
+      $("#ml-allnone").textContent = n === picked.length ? "Niets" : "Alles";
+    };
+    draw();
+    $("#ml-ings").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; picked[b.dataset.i] = !picked[b.dataset.i]; draw(); });
+    $("#ml-allnone").addEventListener("click", () => { const all = picked.every(Boolean); picked.fill(!all); draw(); });
+    $("#ml-add").addEventListener("click", async () => {
+      $("#ml-add").disabled = true;
+      try {
+        const res = await api("POST", "/menu/add", { items: merged.filter((_, i) => picked[i]).map(x => x.text), days: entries.map(m => m.day) });
+        buzz(); closeSheet(); await refresh(); toast(`${res.added} op de lijst voor ${entries.length} ${entries.length === 1 ? "dag" : "dagen"}`);
+      } catch (err) { toast(err.message); $("#ml-add").disabled = false; }
+    });
+  });
+}
+
+// ------------------------------------------------------------ betaalverzoek (SEPA-QR)
+const prettyIban = v => String(v || "").replace(/(.{4})/g, "$1 ").trim();
+function epcPayload(name, iban, cents, note) {
+  // EPC069-12: door bank-apps leesbare SEPA-overboeking.
+  return ["BCD", "002", "1", "SCT", "", name.slice(0, 70), iban, "EUR" + (cents / 100).toFixed(2), "", "", note.slice(0, 140)].join("\n");
+}
+function qrSvg(text) {
+  if (typeof qrcode !== "function") return "";
+  try {
+    qrcode.stringToBytes = qrcode.stringToBytesFuncs["UTF-8"];
+    const qr = qrcode(0, "M"); qr.addData(text, "Byte"); qr.make();
+    const n = qr.getModuleCount(), q = 4; let d = "";
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + q} ${r + q}h1v1h-1z`;
+    return `<svg viewBox="0 0 ${n + 2 * q} ${n + 2 * q}" shape-rendering="crispEdges" role="img" aria-label="QR-code voor de overboeking"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  } catch { return ""; }
+}
+
+// ------------------------------------------------------------ overzicht: extra kolom op brede schermen
+function renderRail() {
+  const today = todayISO();
+  const due = S.tasks.open.filter(t => t.due_date && t.due_date <= today && (!t.assigned_to || t.assigned_to === S.me)).slice(0, 6);
+  const open = S.groceries.items.filter(i => i.status === "open");
+  const meal = menuOf(today);
+  return `<div class="col rail">
+    <div class="card"><div class="card-head">${'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/></svg>'}<span class="sp">Vandaag te doen</span><button class="linkbtn" data-act="goto" data-to="tasks">Alle taken</button></div>
+      ${due.length ? `<div class="list flat">${due.map(t => taskRow(t, false)).join("")}</div>` : `<div class="hint" style="margin:0">Niets voor jou vandaag.</div>`}</div>
+    <div class="card"><div class="card-head">${CAL_ICON}<span class="sp">Eten vandaag</span><button class="linkbtn" data-act="goto" data-to="groceries">Weekmenu</button></div>
+      <div class="${meal ? "" : "hint"}" style="margin:0">${meal ? esc(meal.title || "Recept") : "Nog niets gepland."}</div></div>
+    <div class="card"><div class="card-head">${STAPLE_ICON}<span class="sp">Boodschappen</span><button class="linkbtn" data-act="goto" data-to="groceries">Lijst openen</button></div>
+      ${open.length ? `<div class="chips">${open.slice(0, 8).map(i => `<span class="chip static">${esc(i.name)}</span>`).join("")}${open.length > 8 ? `<span class="chip static muted">+${open.length - 8}</span>` : ""}</div>`
+        : `<div class="hint" style="margin:0">De lijst is leeg.</div>`}</div></div>`;
+}
+
 // ------------------------------------------------------------ Home Assistant-koppeling
 function copyText(text) {
   const done = () => toast("Gekopieerd");
@@ -1432,7 +1652,7 @@ function haSheet() {
       <p class="muted" style="margin:0 0 16px">Laat Home Assistant iets op de boodschappenlijst zetten of een taak afvinken, bijvoorbeeld als je je telefoon tegen een NFC-sticker houdt.</p>
       ${box("ha-rest", "1 · In configuration.yaml", sn.rest, "Herstart Home Assistant daarna één keer. Bevat je sleutel, deel dit niet.")}
       ${box("ha-a1", "2 · Automatisering: iets op de lijst", sn.a1, "Maak een sticker aan via <b>Instellingen → Tags</b> en zet het tag-ID op de plek van JOUW-TAG-ID. Plak dit als YAML in een nieuwe automatisering.")}
-      ${box("ha-a2", "3 · Automatisering: taak afvinken", sn.a2, "De taaknaam moet precies zo heten als in de app. Wie de sticker scant krijgt de punten.")}
+      ${box("ha-a2", "3 · Automatisering: taak afvinken", sn.a2, "De taaknaam moet precies zo heten als in de app. Bij de taak staat daarna wie de sticker scande.")}
       <div class="row-actions"><button class="btn danger" id="ha-rotate">Nieuwe sleutel</button></div>
       <div class="hint">Een nieuwe sleutel maakt de oude ongeldig: pas hem dan ook aan in configuration.yaml.</div>`;
   };
@@ -1539,7 +1759,7 @@ function haCard() {
   if (S.notify === null || S.notify === undefined) return `<div class="hint" style="margin:0">Laden…</div>`;
   if (!S.notify.available) return `<div class="hint" style="margin:0">Sensoren en automatiseringen werken alleen als de app als add-on in Home Assistant draait.</div>`;
   const slugs = S.users.map(u => u.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || "persoon");
-  const sensors = [...slugs.map(sl => "kostendeler_saldo_" + sl), "kostendeler_taken_vandaag", "kostendeler_taken_te_laat", "kostendeler_boodschappen"];
+  const sensors = [...slugs.map(sl => "kostendeler_saldo_" + sl), "kostendeler_taken_vandaag", "kostendeler_taken_te_laat", "kostendeler_boodschappen", "kostendeler_eten_vandaag"];
   return `<div class="hint" style="margin:0 0 10px">De app zet deze sensoren in Home Assistant, voor je dashboard of automatiseringen (bijvoorbeeld een lamp die kleurt als er een taak te laat is):</div>
     <div class="sensorlist">${sensors.map(x => `<code>sensor.${esc(x)}</code>`).join("")}</div>
     <button class="btn" data-act="ha-setup" style="margin-top:14px">NFC en automatiseringen instellen</button>`;
@@ -1594,6 +1814,12 @@ function renderSettings() {
       <div class="hint">${S.ingress
         ? "Iedereen met een Home Assistant-account verschijnt hier zodra die de app één keer opent."
         : `Terugvalmodus (geen Home Assistant-login). <button class="linkbtn" data-act="switch-user">Wissel van gebruiker</button>`}</div></div>
+    <div class="card"><div class="card-head">${ICON.wallet}<span class="sp">Betaalverzoek</span></div>
+      <form id="iban-form" autocomplete="off">
+        <div class="field"><label for="iban-in">Jouw IBAN</label><input class="input" id="iban-in" placeholder="NL00 BANK 0123 4567 89" maxlength="42" autocapitalize="characters" spellcheck="false" value="${esc(prettyIban(user(S.me)?.iban))}"></div>
+        <div class="field"><label for="iban-name">Naam op de rekening</label><input class="input" id="iban-name" maxlength="70" placeholder="${esc(user(S.me)?.name || "")}" value="${esc(user(S.me)?.iban_name || "")}"></div>
+        <button class="btn" type="submit">Opslaan</button></form>
+      <div class="hint">Bij afrekenen ziet je huisgenoot dan een QR-code met jouw IBAN en het bedrag. Het IBAN blijft op je eigen Home Assistant.</div></div>
     <div class="card"><div class="card-head">${ICON.home}<span class="sp">Home Assistant</span></div>${haCard()}</div>
     <div class="card"><div class="card-head">${ICON.lock}<span class="sp">Privacy</span></div><div class="hint" style="margin:0">Alle gegevens staan in een SQLite-database op je eigen Home Assistant en gaan mee in de HA-back-ups. Er gaat niets naar buiten.</div></div></div></div>`;
 }
@@ -1820,19 +2046,52 @@ function summaryText(payer, shares) {
 
 // ---- afrekenen
 function settleSheet(sug) {
+  const to = user(sug.to), iPay = sug.from === S.me, iGet = sug.to === S.me;
+  const holder = to?.iban_name || to?.name || "";
+  const note = `Kostendeler ${monthLabel(thisMonth())}`;
+  const payBlock = to?.iban ? `<div class="paybox">
+      <div class="qr" id="s-qr"></div>
+      <div class="paydata">
+        <div class="hint" style="margin:0 0 8px">${iPay ? "Scan met de bank-app op een andere telefoon, of kopieer de gegevens." : iGet ? `Laat ${esc(firstName(sug.from))} deze code scannen met de bank-app.` : "Scan met de bank-app."}</div>
+        <button class="copyrow" data-copy="${esc(to.iban)}"><span><small>IBAN</small>${esc(prettyIban(to.iban))}</span><em>Kopieer</em></button>
+        <button class="copyrow" data-copy="${esc(holder)}"><span><small>Naam</small>${esc(holder)}</span><em>Kopieer</em></button>
+        <button class="copyrow" id="s-copyamt"><span><small>Bedrag</small><b id="s-amttxt"></b></span><em>Kopieer</em></button>
+        ${iGet ? `<button class="btn" id="s-share" style="margin-top:10px;width:100%">Betaalverzoek delen</button>` : ""}
+      </div></div>`
+    : `<div class="hint" style="margin:0 0 16px">${iGet ? "Zet je IBAN bij Instellingen → Betaalverzoek, dan staat hier voortaan een QR-code om te scannen."
+        : `${esc(cap(firstName(sug.to)))} heeft nog geen IBAN ingevuld (Instellingen → Betaalverzoek). Daarna staat hier een QR-code.`}</div>`;
   openSheet(`
     <h3>Afrekenen</h3>
-    <p style="margin:0 0 16px" class="muted">${esc(nameOf(sug.from, true))} betaalt ${esc(nameObj(sug.to))}. Doe dit bijvoorbeeld met een Tikkie en markeer het daarna hier als betaald.</p>
+    <p style="margin:0 0 16px" class="muted">${esc(nameOf(sug.from, true))} betaalt ${esc(nameObj(sug.to))}.</p>
     <div class="field"><div class="amount-input"><span>€</span><input id="s-amount" class="tnum" inputmode="decimal" value="${centsToInput(sug.amount)}"></div>
       <div class="hint">Je kunt ook een deel afrekenen.</div></div>
+    ${payBlock}
     <div class="field"><label for="s-date">Datum</label><input class="input" type="date" id="s-date" value="${todayISO()}"></div>
     <button class="btn primary block" id="s-save">Markeer als betaald</button>
+    <div class="hint" style="text-align:center">De app maakt zelf niets over. Markeer het als betaald zodra het geld is overgemaakt.</div>
   `, sheet => {
-    sheet.querySelector("#s-save").addEventListener("click", async () => {
-      const amount = parseAmount(sheet.querySelector("#s-amount").value);
-      if (!(amount > 0)) return toast("Ongeldig bedrag");
+    const $ = s => sheet.querySelector(s);
+    const amount = () => parseAmount($("#s-amount").value);
+    const drawPay = () => {
+      if (!to?.iban) return;
+      const a = amount(), ok = a > 0;
+      $("#s-amttxt").textContent = ok ? fmt(a) : "–";
+      $("#s-qr").innerHTML = ok ? (qrSvg(epcPayload(holder, to.iban, a, note)) || `<span class="muted">QR-code niet beschikbaar</span>`) : `<span class="muted">Vul een bedrag in</span>`;
+    };
+    drawPay();
+    $("#s-amount").addEventListener("input", drawPay);
+    sheet.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", () => copyText(b.dataset.copy)));
+    $("#s-copyamt") && $("#s-copyamt").addEventListener("click", () => { const a = amount(); if (a > 0) copyText((a / 100).toFixed(2).replace(".", ",")); });
+    $("#s-share") && $("#s-share").addEventListener("click", () => {
+      const a = amount(); if (!(a > 0)) return toast("Ongeldig bedrag");
+      const text = `Wil je ${fmt(a)} overmaken naar ${prettyIban(to.iban)} t.n.v. ${holder}? Omschrijving: ${note}.`;
+      if (navigator.share) navigator.share({ text }).catch(() => {}); else copyText(text);
+    });
+    $("#s-save").addEventListener("click", async () => {
+      const amt = amount();
+      if (!(amt > 0)) return toast("Ongeldig bedrag");
       try {
-        const st = await api("POST", "/settlements", { from_user: sug.from, to_user: sug.to, amount, date: sheet.querySelector("#s-date").value || todayISO() });
+        const st = await api("POST", "/settlements", { from_user: sug.from, to_user: sug.to, amount: amt, date: $("#s-date").value || todayISO() });
         S.fresh = "s" + st.id; buzz();
         closeSheet(); toast("Afgerekend"); await refresh();
       } catch (err) { toast(err.message); }
@@ -1954,6 +2213,10 @@ document.getElementById("app").addEventListener("click", async e => {
       .then(refresh).catch(err => toast(err.message));
   }
   else if (act === "g-staples") staplesSheet();
+  else if (act === "m-day") menuDaySheet(b.dataset.day);
+  else if (act === "m-prev" || act === "m-next") { S.menuWeek += act === "m-prev" ? -1 : 1; render(); }
+  else if (act === "m-list") menuListSheet();
+  else if (act === "goto") { S.tab = b.dataset.to; S.animate = true; refresh().then(() => window.scrollTo(0, 0)).catch(err => toast(err.message)); }
   else if (act === "r-open") recipeSheet(S.groceries.recipes.find(r => r.id === Number(b.dataset.id)));
   else if (act === "r-new") recipeEditSheet(null);
   else if (act === "r-all") recipesAllSheet();
@@ -1971,6 +2234,15 @@ document.getElementById("app").addEventListener("click", async e => {
 });
 // Snel een taak erbij: typ en druk op enter, het invoerveld blijft open voor de volgende.
 document.getElementById("app").addEventListener("submit", async e => {
+  if (e.target.id === "iban-form") {
+    e.preventDefault();
+    try {
+      const patch = { iban: document.getElementById("iban-in").value.trim(), iban_name: document.getElementById("iban-name").value.trim() };
+      await api("PUT", "/me", patch);
+      const me = await api("GET", "/me"); S.users = me.users; buzz(); toast(patch.iban ? "IBAN opgeslagen" : "IBAN verwijderd"); render();
+    } catch (err) { toast(err.message); }
+    return;
+  }
   if (e.target.id === "gqa") {
     e.preventDefault();
     const input = document.getElementById("gqa-input"), name = input.value.trim();
@@ -2006,6 +2278,20 @@ async function saveMe(patch, msg) {
 const prettySvc = n => cap(n.replace(/^mobile_app_/, "").replace(/_/g, " "));
 // Bijwerken als je terugkomt in de app (bijv. huisgenoot heeft iets toegevoegd).
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.me) refresh().catch(() => {}); });
+// Sneltoetsen (computer): N = nieuw, 1-5 = tabbladen, / = snel toevoegen, pijltjes = maand, Esc = sluiten.
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.getElementById("ov")) return closeSheet();
+  if (e.metaKey || e.ctrlKey || e.altKey || !S.me || document.getElementById("ov")) return;
+  const t = e.target;
+  if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) { if (e.key === "Escape") t.blur(); return; }
+  const tabs = ["home", "tasks", "groceries", "stats", "settings"];
+  if (e.key >= "1" && e.key <= "5") { document.querySelector(`nav.tabs [data-tab="${tabs[e.key - 1]}"]`)?.click(); e.preventDefault(); }
+  else if (e.key.toLowerCase() === "n") { document.getElementById("fab").click(); e.preventDefault(); }
+  else if (e.key === "/") { const q = document.getElementById(S.tab === "tasks" ? "qa-input" : "gqa-input"); if (q) { q.focus(); e.preventDefault(); } }
+  else if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && (S.tab === "home" || S.tab === "stats")) {
+    document.querySelector(`[data-act="${e.key === "ArrowLeft" ? "prev" : "next"}-month"]:not(:disabled)`)?.click();
+  }
+});
 // Op Taken en Boodschappen elke 20 seconden bijwerken, zodat je ziet wat je huisgenoot net toevoegde of afvinkte.
 setInterval(() => {
   if (!document.hidden && S.me && (S.tab === "groceries" || S.tab === "tasks") && !document.getElementById("ov")) refresh().catch(() => {});

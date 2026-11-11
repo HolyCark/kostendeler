@@ -44,7 +44,7 @@ DEFAULT_CATEGORIES = [
 EMOJI_TO_ICON = {"🛒": "cart", "🧽": "sparkle", "🧴": "bottle", "🛋️": "sofa", "🛋": "sofa",
                  "🍕": "utensils", "📦": "box"}
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 DEFAULT_STAPLES = ["Wc-papier", "Afwasmiddel", "Keukenrol", "Melk", "Brood", "Koffie"]
 MONTH_RE = re.compile(r"^\d{4}-\d{2}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -251,6 +251,20 @@ def init_db():
             );
             """
         )
+    if version < 9:
+        db.executescript(
+            """
+            ALTER TABLE users ADD COLUMN iban TEXT;
+            ALTER TABLE users ADD COLUMN iban_name TEXT;
+            CREATE TABLE IF NOT EXISTS meal_plan(
+                day TEXT PRIMARY KEY,
+                recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+                title TEXT,
+                servings INTEGER NOT NULL DEFAULT 2,
+                listed INTEGER NOT NULL DEFAULT 0
+            );
+            """
+        )
     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     db.commit()
     db.close()
@@ -262,7 +276,8 @@ def user_ids(db):
 
 def list_users(db):
     return [dict(r) for r in db.execute(
-        "SELECT id, name, notify_service, monthly_report, task_reminder, task_reminder_hour, task_assigned "
+        "SELECT id, name, notify_service, monthly_report, task_reminder, task_reminder_hour, task_assigned, "
+        "iban, iban_name "
         "FROM users ORDER BY created_at, name")]
 
 
@@ -482,7 +497,7 @@ def task_lists(db):
     done = [task_dict(r) for r in db.execute(
         f"SELECT {TASK_COLS} FROM tasks WHERE done = 1 ORDER BY done_at DESC, id DESC LIMIT 30")]
     month = date.today().strftime("%Y-%m")
-    return {"open": open_, "done": done, "points": {"month": month, "per_user": month_points(db, month)}}
+    return {"open": open_, "done": done}
 
 
 def complete_task(db, row, doer, today):
@@ -532,7 +547,32 @@ def grocery_lists(db):
     staples = [dict(r) for r in db.execute("SELECT id, name FROM staples ORDER BY position, id")]
     suggestions = [r[0] for r in db.execute(
         "SELECT name FROM groceries GROUP BY lower(name) ORDER BY COUNT(*) DESC, MAX(id) DESC LIMIT 60")]
-    return {"items": items, "staples": staples, "suggestions": suggestions, "recipes": recipe_list(db)}
+    return {"items": items, "staples": staples, "suggestions": suggestions, "recipes": recipe_list(db),
+            "menu": menu_list(db)}
+
+
+# ---------------------------------------------------------------- weekmenu
+
+def menu_list(db):
+    """Geplande maaltijden van vorige week tot een maand vooruit."""
+    start = (date.today() - timedelta(days=8)).isoformat()
+    return [dict(r) for r in db.execute(
+        "SELECT m.day, m.recipe_id, COALESCE(r.title, m.title) AS title, m.servings, m.listed "
+        "FROM meal_plan m LEFT JOIN recipes r ON r.id = m.recipe_id WHERE m.day >= ? ORDER BY m.day", (start,))]
+
+
+def menu_today(db):
+    row = db.execute("SELECT COALESCE(r.title, m.title) FROM meal_plan m LEFT JOIN recipes r ON r.id = m.recipe_id "
+                     "WHERE m.day = ?", (date.today().isoformat(),)).fetchone()
+    return row[0] if row and row[0] else None
+
+
+def valid_iban(value):
+    iban = re.sub(r"\s+", "", str(value or "")).upper()
+    if not re.fullmatch(r"[A-Z]{2}\d{2}[A-Z0-9]{10,30}", iban):
+        return None
+    digits = "".join(str(int(c, 36)) for c in iban[4:] + iban[:4])
+    return iban if int(digits) % 97 == 1 else None
 
 
 # ---------------------------------------------------------------- recepten
@@ -713,6 +753,7 @@ def background_generator():
             # Afgevinkte taken en gekochte boodschappen ruimen zichzelf op.
             db.execute("DELETE FROM tasks WHERE done = 1 AND done_at < datetime('now', '-90 days')")
             db.execute("DELETE FROM groceries WHERE status = 'bought' AND bought_at < datetime('now', '-180 days')")
+            db.execute("DELETE FROM meal_plan WHERE day < date('now', '-60 days')")
             db.commit()
             db.close()
             push_ha_states()
@@ -792,11 +833,6 @@ def report_text(db, uid, month):
         lines.append(f"Meeste geld naar {cat[0] if cat else 'overig'}: {euro(top['total'])}.")
     else:
         lines.append("Geen uitgaven vorige maand.")
-    pts = {k: v for k, v in month_points(db, month).items() if v["count"]}
-    if pts:
-        parts = [f"{'jij' if k == uid else names.get(k, 'onbekend')} {v['points']}"
-                 for k, v in sorted(pts.items(), key=lambda kv: (kv[0] != uid, kv[0]))]
-        lines.append("Takenpunten: " + ", ".join(parts) + ".")
     owed = [x for x in suggest_settlements(balances(db)) if uid in (x["from"], x["to"])]
     if not owed:
         lines.append("Jullie staan quitte.")
@@ -973,6 +1009,10 @@ def ha_states(db):
         "state": str(len(items)),
         "attributes": {"friendly_name": "Boodschappenlijst", "icon": "mdi:cart-outline",
                        "unit_of_measurement": "items", "items": items[:40]}}
+    meal = menu_today(db)
+    states["sensor.kostendeler_eten_vandaag"] = {
+        "state": (meal or "Niets gepland")[:250],
+        "attributes": {"friendly_name": "Eten vandaag", "icon": "mdi:silverware-fork-knife"}}
     return states
 
 
@@ -1481,6 +1521,16 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute("UPDATE users SET notify_service = ? WHERE id = ?", (svc, me))
             if "monthly_report" in body:
                 db.execute("UPDATE users SET monthly_report = ? WHERE id = ?", (1 if body["monthly_report"] else 0, me))
+            if "iban" in body:
+                iban = None
+                if str(body["iban"] or "").strip():
+                    iban = valid_iban(body["iban"])
+                    if not iban:
+                        raise ApiError(400, "Dit IBAN klopt niet. Controleer het nummer.")
+                db.execute("UPDATE users SET iban = ? WHERE id = ?", (iban, me))
+            if "iban_name" in body:
+                name = re.sub(r"\s+", " ", str(body["iban_name"] or "")).strip()[:70] or None
+                db.execute("UPDATE users SET iban_name = ? WHERE id = ?", (name, me))
             if "task_reminder" in body:
                 db.execute("UPDATE users SET task_reminder = ? WHERE id = ?", (1 if body["task_reminder"] else 0, me))
             if "task_reminder_hour" in body:
@@ -1801,6 +1851,55 @@ class Handler(BaseHTTPRequestHandler):
                 db.execute("DELETE FROM recipes WHERE id = ?", (rid,))
                 db.commit()
                 return 200, {"ok": True, "deleted": row}
+
+        # -- weekmenu
+        if path == "/menu/add" and method == "POST":
+            body = self.read_json()
+            items, days = body.get("items"), body.get("days")
+            if not isinstance(items, list) or not isinstance(days, list) or not days:
+                raise ApiError(400, "Niets om toe te voegen")
+            days = [parse_date(d) for d in days[:31]]
+            added = 0
+            for name in items[:200]:
+                name = re.sub(r"\s+", " ", str(name or "")).strip()[:80]
+                if name:
+                    added += add_grocery(db, name, me)[1]
+            marks = ",".join("?" * len(days))
+            db.execute(f"UPDATE recipes SET used_count = used_count + 1, last_used = CURRENT_TIMESTAMP WHERE id IN "
+                       f"(SELECT recipe_id FROM meal_plan WHERE day IN ({marks}) AND listed = 0)", days)
+            db.execute(f"UPDATE meal_plan SET listed = 1 WHERE day IN ({marks})", days)
+            db.commit()
+            return 200, {"ok": True, "added": added}
+
+        m = re.fullmatch(r"/menu/(\d{4}-\d{2}-\d{2})", path)
+        if m:
+            day = parse_date(m.group(1))
+            if method == "PUT":
+                body = self.read_json()
+                rid = body.get("recipe_id")
+                title = None
+                if rid is not None:
+                    if isinstance(rid, bool) or not isinstance(rid, int) or not recipe_row(db, rid):
+                        raise ApiError(400, "Recept niet gevonden")
+                else:
+                    title = re.sub(r"\s+", " ", str(body.get("title") or "")).strip()[:80]
+                    if not title:
+                        raise ApiError(400, "Kies een recept of vul iets in")
+                servings = body.get("servings", 2)
+                if isinstance(servings, bool) or not isinstance(servings, int) or not 1 <= servings <= 50:
+                    raise ApiError(400, "Kies 1 tot 50 personen")
+                old = db.execute("SELECT recipe_id, servings, listed FROM meal_plan WHERE day = ?", (day,)).fetchone()
+                # Zelfde recept en aantal personen: wat al op de lijst staat blijft gemarkeerd.
+                listed = 1 if old and old["listed"] and old["recipe_id"] == rid and old["servings"] == servings else 0
+                db.execute("INSERT INTO meal_plan(day, recipe_id, title, servings, listed) VALUES (?, ?, ?, ?, ?) "
+                           "ON CONFLICT(day) DO UPDATE SET recipe_id = excluded.recipe_id, title = excluded.title, "
+                           "servings = excluded.servings, listed = excluded.listed", (day, rid, title, servings, listed))
+                db.commit()
+                return 200, {"ok": True}
+            if method == "DELETE":
+                db.execute("DELETE FROM meal_plan WHERE day = ?", (day,))
+                db.commit()
+                return 200, {"ok": True}
 
         # -- koppeling met Home Assistant (sleutel en adres voor automatiseringen)
         if path == "/ha-info" and method in ("GET", "POST"):
