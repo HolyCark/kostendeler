@@ -14,20 +14,31 @@
     --line: rgba(30, 34, 39, .07); --glass-border: rgba(255, 255, 255, .85);
     --glass: linear-gradient(160deg, rgba(255, 255, 255, .82), rgba(255, 255, 255, .55));
     --shadow: 0 1px 2px rgba(30, 34, 39, .04), 0 12px 32px rgba(60, 66, 78, .10);
-    --pill: linear-gradient(135deg, #4a5059 0%, #2b3036 100%);
-    --pill-shadow: 0 10px 24px rgba(30, 34, 39, .28);
+    --acc-1: #5b6fe6; --acc-2: #3f51c9; --acc: #4a5dd6; --acc-glow: rgba(63, 81, 201, .30); --acc-soft: rgba(91, 111, 230, .12);
+    --pill: linear-gradient(135deg, var(--acc-1) 0%, var(--acc-2) 100%);
+    --pill-shadow: 0 10px 24px var(--acc-glow);
     --field: rgba(255, 255, 255, .7); --field-border: rgba(30, 34, 39, .1);
-    --tick-on: #2b3036; --tick-off: rgba(30, 34, 39, .14);
+    --tick-on: var(--acc); --tick-off: rgba(30, 34, 39, .14);
     --on-pill: #fff; --surface: rgba(255, 255, 255, .75); --surface-hi: #fff; --icon: #2b3036; --strong: #3b4048;
     --sheet: linear-gradient(175deg, #f7f8f9, #eceef1); --sheet-border: #fff; --overlay: rgba(40, 44, 52, .25);
     --fade: 223, 226, 230; --focus: 43, 48, 54; --toast-bg: rgba(43, 48, 54, .94); --toast-fg: #fff;
     --plus-bg: radial-gradient(circle at 35% 30%, #ffffff, #d9dce2 55%, #b9bec7); --plus-border: rgba(255, 255, 255, .9); --plus-fg: #2b3036;
-    --chart-a: #8a9099; --chart-b: #2b3036; --chart-area: rgba(43, 48, 54, .16); --dot-fill: #fff;
+    --chart-a: #a9b0bd; --chart-b: var(--acc); --chart-area: var(--acc-soft); --dot-fill: #fff;
     --tab-active-desk: rgba(255, 255, 255, .9); --check-bg: #fff; --check-border: rgba(30, 34, 39, .2);
-    --aura-1: rgba(255, 255, 255, .95); --aura-2: rgba(196, 202, 214, .7); --aura-3: rgba(214, 218, 226, .9); --aura-top: #eff0f2; --aura-bottom: #dfe2e6;
+    --aura-1: rgba(255, 255, 255, .95); --aura-2: var(--aura-acc); --aura-3: rgba(255, 216, 194, .55); --aura-top: #f0f1f5; --aura-bottom: #e2e4ea;
+    --aura-acc: rgba(178, 190, 255, .55);
     --plus: #1e9a72; --minus: #d0456c;
     --radius: 26px;
   }
+  body { --pill: linear-gradient(135deg, var(--acc-1) 0%, var(--acc-2) 100%); --pill-shadow: 0 10px 24px var(--acc-glow);
+    --tick-on: var(--acc); --chart-b: var(--acc); --chart-area: var(--acc-soft); --aura-2: var(--aura-acc); }
+  body[data-tab="tasks"] { --acc-1: #1f9778; --acc-2: #126a51; --acc: #16805f; --acc-glow: rgba(18, 106, 81, .30); --acc-soft: rgba(31, 151, 120, .13); --aura-acc: rgba(160, 228, 204, .6); }
+  body[data-tab="groceries"] { --acc-1: #d2692a; --acc-2: #a94a14; --acc: #bd591d; --acc-glow: rgba(169, 74, 20, .28); --acc-soft: rgba(210, 105, 42, .13); --aura-acc: rgba(255, 208, 160, .65); }
+  body[data-tab="stats"] { --acc-1: #8a5fe0; --acc-2: #6a3fc4; --acc: #7a4fd2; --acc-glow: rgba(106, 63, 196, .30); --acc-soft: rgba(138, 95, 224, .13); --aura-acc: rgba(212, 190, 255, .6); }
+  .card-head > svg, .tile-head > svg { color: var(--acc); opacity: 1 !important; }
+  .linkbtn { color: var(--acc) !important; text-decoration-color: var(--acc-soft) !important; }
+  .day { letter-spacing: .2px; }
+  .ucol { background: var(--uc-bg) !important; color: var(--uc) !important; border-color: var(--uc-line) !important; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html { background: var(--bg); }
   html, body { margin: 0; color: var(--text);
@@ -126,7 +137,7 @@
   .cat-name .ci { width: 18px; height: 18px; color: var(--muted); }
   .icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
   .icon-pick { aspect-ratio: 1; border-radius: 14px; border: 1px solid var(--field-border); background: var(--surface); display: grid; place-items: center; padding: 0; color: var(--strong); }
-  .icon-pick.on { background: var(--pill); color: var(--on-pill); border-color: transparent; box-shadow: 0 6px 16px rgba(30, 34, 39, .22); }
+  .icon-pick.on { background: var(--pill); color: var(--on-pill); border-color: transparent; box-shadow: 0 6px 16px var(--acc-glow); }
   @media (max-width: 380px) { .icon-grid { grid-template-columns: repeat(6, 1fr); } }
   .item .main { flex: 1; min-width: 0; }
   .item .title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -191,7 +202,7 @@
   .task.is-done .title { text-decoration: line-through; color: var(--muted); font-weight: 400; }
   .task.finishing { opacity: .55; }
   .task.finishing .title { text-decoration: line-through; color: var(--muted); }
-  .task.finishing .check { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px rgba(30, 34, 39, .25); }
+  .task.finishing .check { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px var(--acc-glow); }
   .task.fresh { animation: flash 1.4s ease-out .2s both; }
   .donetoggle { display: block; margin: 16px auto 0; }
   #taskdone .list { margin-top: 12px; }
@@ -251,13 +262,13 @@
   .amount-input input { border: 0; background: none; font-size: 46px; font-weight: 250; letter-spacing: -1px; width: 100%; outline: none; padding: 0; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { border: 1px solid var(--field-border); background: var(--surface); border-radius: 999px; padding: 8px 14px; font-size: 14px; transition: all .15s; }
-  .chip.on { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 6px 16px rgba(30, 34, 39, .22); }
+  .chip.on { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 6px 16px var(--acc-glow); }
   .split-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
   .split-row .who { flex: 1; }
   .split-row input { width: 116px; text-align: right; }
   .split-row select.hoursel { width: auto; flex: 0 0 auto; padding: 9px 36px 9px 14px; border-radius: 999px; font-size: 14px; }
   .check { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--check-border); display: grid; place-items: center; font-size: 13px; color: transparent; background: var(--check-bg); padding: 0; }
-  .check.on { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px rgba(30, 34, 39, .25); }
+  .check.on { background: var(--pill); border-color: transparent; color: var(--on-pill); box-shadow: 0 4px 12px var(--acc-glow); }
   .hint { font-size: 13px; color: var(--muted); margin-top: 8px; }
   .hint.warn { color: var(--minus); }
   .toggle-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -417,18 +428,24 @@
       --line: rgba(255, 255, 255, .07); --glass-border: rgba(255, 255, 255, .08);
       --glass: linear-gradient(160deg, rgba(52, 56, 62, .72), rgba(36, 39, 44, .6));
       --shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 14px 34px rgba(0, 0, 0, .35);
-      --pill: linear-gradient(135deg, #f2f3f5 0%, #c7cbd1 100%); --pill-shadow: 0 10px 24px rgba(0, 0, 0, .45);
+      --acc-1: #a3b0ff; --acc-2: #7c8df4; --acc: #95a3ff; --acc-glow: rgba(124, 141, 244, .28); --acc-soft: rgba(149, 163, 255, .16);
+      --pill-shadow: 0 10px 24px var(--acc-glow), 0 8px 20px rgba(0, 0, 0, .35);
       --field: rgba(255, 255, 255, .05); --field-border: rgba(255, 255, 255, .1);
-      --tick-on: #eceef1; --tick-off: rgba(255, 255, 255, .13);
+      --tick-off: rgba(255, 255, 255, .13);
       --plus: #4fd1a5; --minus: #f2799a;
-      --on-pill: #17191c; --surface: rgba(255, 255, 255, .06); --surface-hi: rgba(255, 255, 255, .12); --icon: #e3e6ea; --strong: #d5d9de;
+      --on-pill: #10131f; --surface: rgba(255, 255, 255, .06); --surface-hi: rgba(255, 255, 255, .12); --icon: #e3e6ea; --strong: #d5d9de;
       --sheet: linear-gradient(175deg, #2a2d32, #1f2125); --sheet-border: rgba(255, 255, 255, .08); --overlay: rgba(0, 0, 0, .5);
       --fade: 22, 24, 27; --focus: 236, 238, 241; --toast-bg: rgba(236, 238, 241, .95); --toast-fg: #17191c;
       --plus-bg: radial-gradient(circle at 35% 30%, #ffffff, #d4d8dd 55%, #9ea4ac); --plus-border: rgba(22, 24, 27, .9); --plus-fg: #17191c;
-      --chart-a: #6f757d; --chart-b: #eceef1; --chart-area: rgba(236, 238, 241, .12); --dot-fill: #16181b;
+      --chart-a: #6f757d; --dot-fill: #16181b;
       --tab-active-desk: rgba(255, 255, 255, .1); --check-bg: rgba(255, 255, 255, .04); --check-border: rgba(255, 255, 255, .22);
-      --aura-1: rgba(70, 75, 82, .55); --aura-2: rgba(48, 52, 58, .6); --aura-3: rgba(40, 43, 48, .7); --aura-top: #1c1e21; --aura-bottom: #121315;
+      --aura-1: rgba(70, 75, 82, .55); --aura-3: rgba(96, 62, 50, .32); --aura-top: #1c1e21; --aura-bottom: #121315;
+      --aura-acc: rgba(74, 86, 170, .38);
     }
+    body { --pill-shadow: 0 10px 24px var(--acc-glow), 0 8px 20px rgba(0, 0, 0, .35); }
+    body[data-tab="tasks"] { --acc-1: #6fe0bb; --acc-2: #3fc49b; --acc: #5fd9b3; --acc-glow: rgba(63, 196, 155, .25); --acc-soft: rgba(95, 217, 179, .15); --aura-acc: rgba(40, 120, 96, .36); }
+    body[data-tab="groceries"] { --acc-1: #ffb783; --acc-2: #f2924f; --acc: #ffab6e; --acc-glow: rgba(242, 146, 79, .25); --acc-soft: rgba(255, 171, 110, .15); --aura-acc: rgba(140, 84, 40, .36); }
+    body[data-tab="stats"] { --acc-1: #cbaeff; --acc-2: #a784f2; --acc: #bd9cff; --acc-glow: rgba(167, 132, 242, .26); --acc-soft: rgba(189, 156, 255, .16); --aura-acc: rgba(100, 70, 160, .38); }
     .status { background: rgba(255, 255, 255, .06); }
     .minibars span { background: rgba(255, 255, 255, .16); }
     .bar { background: rgba(255, 255, 255, .07); }
@@ -497,6 +514,11 @@ const store = {
 // Zachte kleuren per categorie (zoals de activiteitsringen).
 const PALETTE = ["#ee8fb5", "#4fcf9f", "#7fa3ee", "#a99bea", "#f3a65e", "#4cc3d6", "#e9c44f", "#9aa6b8"];
 const catColor = id => id == null ? "#94a3b8" : PALETTE[(Number(id) - 1) % PALETTE.length];
+const USER_COLORS = ["#4a5dd6", "#d2692a", "#16805f", "#a04fd0", "#c2901a", "#2f8fcf"];
+const USER_COLORS_DARK = ["#95a3ff", "#ffab6e", "#5fd9b3", "#d7a2ff", "#f0c860", "#7cc4f5"];
+const isDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+const userColor = id => { const i = Math.max(0, S.users.findIndex(u => u.id === id)); return (isDark() ? USER_COLORS_DARK : USER_COLORS)[i % USER_COLORS.length]; };
+const ucol = id => { const c = userColor(id); return `--uc:${c};--uc-bg:${tint(c, .15)};--uc-line:${tint(c, .32)}`; };
 const tint = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
 const CAT_ICONS = {"cart": "<circle cx=\"9\" cy=\"20\" r=\"1.3\"/><circle cx=\"17\" cy=\"20\" r=\"1.3\"/><path d=\"M3 4h2.2l2.3 11h10.3l2-8H6.4\"/>","sparkle": "<path d=\"M11 4l1.6 4.4L17 10l-4.4 1.6L11 16l-1.6-4.4L5 10l4.4-1.6z\"/><path d=\"M18 14.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z\"/>","bottle": "<path d=\"M10 3h4v3l1.5 2.5V19a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V8.5L10 6z\"/><path d=\"M8.5 12.5h7\"/>","sofa": "<path d=\"M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3\"/><path d=\"M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v4H3z\"/><path d=\"M5 17v2M19 17v2\"/>","utensils": "<path d=\"M5 3v5a2 2 0 0 0 4 0V3M7 3v18\"/><path d=\"M17 21V3c-2 1-3 3.5-3 7h3\"/>","box": "<path d=\"M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z\"/><path d=\"M3.5 7.5 12 12l8.5-4.5M12 12v9\"/>","home": "<path d=\"M4 11 12 4l8 7\"/><path d=\"M6 9.5V20h12V9.5\"/>","bolt": "<path d=\"M13 3 5 14h6l-1 7 8-11h-6z\"/>","wifi": "<path d=\"M3 9a13 13 0 0 1 18 0M6 12.5a8.5 8.5 0 0 1 12 0M9 16a4 4 0 0 1 6 0\"/><circle cx=\"12\" cy=\"19.2\" r=\".9\"/>","gift": "<rect x=\"4\" y=\"9\" width=\"16\" height=\"11\" rx=\"1.5\"/><path d=\"M3 9h18M12 9v11\"/><path d=\"M12 9C10.5 6 7 5.5 7 7.8 7 9 12 9 12 9zm0 0c1.5-3 5-3.5 5-1.2C17 9 12 9 12 9z\"/>","cup": "<path d=\"M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z\"/><path d=\"M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3v2M11 3v2\"/>","plant": "<path d=\"M12 21v-9\"/><path d=\"M12 12c0-4 3-6 7-6 0 4-3 6-7 6zM12 14.5c0-3-2.5-5-6-5 0 3 2.5 5 6 5z\"/>","wrench": "<path d=\"M15 4a4 4 0 0 0-3.7 5.5L4 16.8V20h3.2l7.3-7.3A4 4 0 0 0 20 9l-2.5 2.5-2.5-.5-.5-2.5z\"/>","paw": "<circle cx=\"8\" cy=\"8.5\" r=\"1.6\"/><circle cx=\"16\" cy=\"8.5\" r=\"1.6\"/><circle cx=\"4.8\" cy=\"12.8\" r=\"1.4\"/><circle cx=\"19.2\" cy=\"12.8\" r=\"1.4\"/><path d=\"M12 12c-2.5 0-5 3.5-5 5.5S9 20 12 20s5-.5 5-2.5-2.5-5.5-5-5.5z\"/>","shirt": "<path d=\"M8 3 3.5 6l2 4L8 9v12h8V9l2.5 1 2-4L16 3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z\"/>","tag": "<path d=\"M3 12V4h8l9 9-8 8z\"/><circle cx=\"7.5\" cy=\"8.5\" r=\"1.3\"/>"};
 const catIcon = key => `<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${CAT_ICONS[key] || CAT_ICONS.box}</svg>`;
@@ -611,6 +633,7 @@ async function reloadMeta() {
 
 // ------------------------------------------------------------ renderen
 function syncTabs() {
+  document.body.dataset.tab = S.tab;
   document.querySelectorAll("nav.tabs .tab").forEach(b => b.classList.toggle("active", b.dataset.tab === S.tab));
   // De plusknop voegt toe wat bij het tabblad past.
   const fab = document.getElementById("fab"), label = S.tab === "tasks" ? "Nieuwe taak" : S.tab === "groceries" ? "Nieuwe boodschap" : "Nieuwe uitgave";
@@ -745,7 +768,7 @@ function renderHome() {
   const header = `<header class="hello"><div class="txt">
       <div class="date">${esc(cap(new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })))}</div>
       <h1>${greeting()}${meName ? ", " + esc(meName) : ""}</h1></div>
-    <button class="avatar avatar-btn" data-act="open-settings" aria-label="Instellingen">${esc(initials(user(S.me)?.name))}<span class="gear"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span></button></header>`;
+    <button class="avatar avatar-btn ucol" style="${ucol(S.me)}" data-act="open-settings" aria-label="Instellingen">${esc(initials(user(S.me)?.name))}<span class="gear"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></span></button></header>`;
   const items = [
     ...S.activity.expenses.map(e => ({ kind: "e", date: e.date, at: e.created_at || "", data: e })),
     ...S.activity.settlements.map(s => ({ kind: "s", date: s.date, at: s.created_at || "", data: s })),
@@ -832,7 +855,7 @@ function taskRow(t, isDone) {
     else if (t.repeat_unit && t.done_by) bits.push(`<span>laatst door ${esc(nameObj(t.done_by))}</span>`);
     if (t.points > 1) bits.push(`<span>${t.points} punten</span>`);
   }
-  const who = t.assigned_to ? `<span class="tav" title="${esc(nameOf(t.assigned_to, true))}">${esc(initials(user(t.assigned_to)?.name))}</span>` : "";
+  const who = t.assigned_to ? `<span class="tav ucol" style="${ucol(t.assigned_to)}" title="${esc(nameOf(t.assigned_to, true))}">${esc(initials(user(t.assigned_to)?.name))}</span>` : "";
   return `<div class="task ${isDone ? "is-done" : ""} ${S.fresh === "t" + t.id ? "fresh" : ""}">
     <button class="tcheck" data-act="${isDone ? "task-reopen" : "task-done"}" data-id="${t.id}" aria-label="${isDone ? "Weer openen" : "Afvinken"}"><span class="check ${isDone ? "on" : ""}">${CHECK_ICON}</span></button>
     <button class="tmain" data-act="edit-task" data-id="${t.id}"><span class="title">${esc(t.title)}</span>${bits.length ? `<span class="meta">${bits.join("")}</span>` : ""}</button>${who}</div>`;
@@ -873,7 +896,7 @@ function renderTaskScore() {
   const month = S.tasks.points?.month || thisMonth();
   return `<div class="card score"><div class="card-head">${ICON.bars}<span class="sp">Takensaldo</span><span class="status">${esc(cap(monthLabel(month).split(" ")[0]))}</span></div>
     ${rows.map(r => `<div class="cat-row"><div class="top"><span>${esc(nameOf(r.id, true))}</span><b class="tnum">${r.points} <span class="muted" style="font-size:13px">${r.points === 1 ? "punt" : "punten"}</span></b></div>
-      <div class="bar"><i style="width:${Math.round(r.points / max * 100)}%;background:var(${r.id === S.me ? "--tick-on" : "--chart-a"})"></i></div>
+      <div class="bar"><i style="width:${Math.round(r.points / max * 100)}%;background:${userColor(r.id)}"></i></div>
       <div class="sub tnum">${r.count} ${r.count === 1 ? "taak" : "taken"} gedaan</div></div>`).join("")}
     <div class="hint">${verdict} Zwaardere taken tellen voor meer punten.</div></div>`;
 }
@@ -1526,7 +1549,7 @@ function renderSettings() {
   const cats = S.categories.map(c => `<button class="settings-item" data-act="edit-cat" data-id="${c.id}">
     <span class="ico" style="width:36px;height:36px;flex-basis:36px;background:${tint(catColor(c.id), .16)}">${catIcon(c.icon)}</span>
     <span class="grow ${c.archived ? "muted" : ""}">${esc(c.name)}${c.archived ? " (verborgen)" : ""}</span><span class="muted">›</span></button>`).join("");
-  const users = S.users.map(u => `<div class="settings-item"><span class="avatar" style="width:36px;height:36px;flex-basis:36px;font-size:13px">${esc(initials(u.name))}</span>
+  const users = S.users.map(u => `<div class="settings-item"><span class="avatar ucol" style="width:36px;height:36px;flex-basis:36px;font-size:13px;${ucol(u.id)}">${esc(initials(u.name))}</span>
     <span class="grow">${esc(u.name)}${u.id === S.me ? " <span class='muted'>(jij)</span>" : ""}</span></div>`).join("");
   const recs = S.recurring.map(r => {
     const c = cat(r.category_id);
@@ -1607,6 +1630,7 @@ function expenseSheet(existing, recurring = false, prefill = null) {
     paid_by: S.me, date: todayISO(), who: new Set(S.users.map(u => u.id)), custom: false, customVals: {},
   };
   F.day = existing?.day ?? Math.min(new Date().getDate(), 28);
+  const canRepeat = !recurring && !existing && !prefill;
   F.includeNow = true;
   // Bewerken: als de opgeslagen verdeling niet gelijk is, open in aangepaste modus.
   if (existing) {
@@ -1633,7 +1657,10 @@ function expenseSheet(existing, recurring = false, prefill = null) {
       ${existing ? "" : `<div class="split-row hidden" id="f-now-row"><button class="check on" id="f-now" aria-label="Deze maand ook toevoegen">${CHECK_ICON}</button>
         <span class="who">Deze maand ook al toevoegen</span></div>`}
       <div class="hint">Wordt op die dag automatisch toegevoegd. Wijkt een bedrag een keer af? Pas die uitgave dan aan in de lijst.</div></div>`
-    : `<div class="field"><label for="f-date">Datum</label><input class="input" type="date" id="f-date" value="${esc(F.date)}"></div>`}
+    : `<div class="field"><label for="f-date">Datum</label><input class="input" type="date" id="f-date" value="${esc(F.date)}"></div>
+      ${canRepeat ? `<div class="field"><label for="f-repeat">Herhalen</label>
+        <select class="input" id="f-repeat"><option value="">Niet herhalen</option><option value="month">Elke maand</option></select>
+        <div class="hint" id="f-rephint"></div></div>` : ""}`}
     <button class="btn primary block" id="f-save">Opslaan</button>
     ${existing ? `<div class="row-actions">${recurring ? `<button class="btn" id="f-pause">${existing.active ? "Pauzeren" : "Hervatten"}</button>` : ""}<button class="btn danger" id="f-del">Verwijderen</button></div>` : ""}
   `, sheet => {
@@ -1689,7 +1716,7 @@ function expenseSheet(existing, recurring = false, prefill = null) {
 
     amountEl.addEventListener("input", () => { if (F.custom) updateHint(); else drawSplit(); });
     $("#f-desc").addEventListener("input", updateHint);
-    $("#f-cats").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; F.category_id = Number(b.dataset.c); drawCats(); popSel(`[data-c="${b.dataset.c}"]`); });
+    $("#f-cats").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; F.category_id = Number(b.dataset.c); F.catTouched = true; drawCats(); popSel(`[data-c="${b.dataset.c}"]`); });
     $("#f-payer").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (!b) return; F.paid_by = b.dataset.u; drawPayer(); updateHint(); popSel(`#f-payer [data-u="${CSS.escape(b.dataset.u)}"]`); });
     $("#f-mode").addEventListener("click", () => {
       if (!F.custom) {
@@ -1710,6 +1737,15 @@ function expenseSheet(existing, recurring = false, prefill = null) {
       F.customVals[i.dataset.cu] = i.value; updateHint();
     });
 
+    if (canRepeat) {
+      const syncRep = () => {
+        const on = $("#f-repeat").value === "month", d = Number(($("#f-date").value || todayISO()).slice(8, 10));
+        $("#f-rephint").textContent = on ? `Komt vanaf nu elke maand op ${d >= 31 ? "de laatste dag" : `de ${d}e`} vanzelf in de lijst${d > 28 && d < 31 ? " (of de laatste dag als de maand korter is)" : ""}. Aanpassen of stoppen kan bij Instellingen → Vaste kosten.` : "";
+        if (on && fixedCat && !F.catTouched && F.category_id !== fixedCat.id) { F.category_id = fixedCat.id; drawCats(); }
+        $("#f-save").textContent = on ? "Opslaan en herhalen" : "Opslaan";
+      };
+      $("#f-repeat").addEventListener("change", syncRep); $("#f-date").addEventListener("change", syncRep);
+    }
     if (recurring && !existing) {
       const syncNow = () => $("#f-now-row").classList.toggle("hidden", Number($("#f-day").value) >= new Date().getDate());
       $("#f-day").addEventListener("change", syncNow); syncNow();
@@ -1735,11 +1771,13 @@ function expenseSheet(existing, recurring = false, prefill = null) {
       }
       const body = { description: $("#f-desc").value.trim(), amount: total, paid_by: F.paid_by,
         date: $("#f-date").value || todayISO(), category_id: F.category_id, shares };
+      const repeating = canRepeat && $("#f-repeat").value === "month";
+      if (repeating) body.repeat = "month";
       $("#f-save").disabled = true;
       try {
         const saved = F.id ? await api("PUT", "/expenses/" + F.id, body) : await api("POST", "/expenses", body);
         S.fresh = "e" + saved.id; buzz();
-        let msg = F.id ? "Bijgewerkt" : "Toegevoegd";
+        let msg = F.id ? "Bijgewerkt" : repeating ? "Toegevoegd · herhaalt elke maand" : "Toegevoegd";
         if (prefill?.groceryCheckout) {
           try { const c = await api("POST", "/groceries/checkout", { expense_id: saved.id }); msg = `Afgerekend · ${c.count} ${c.count === 1 ? "boodschap" : "boodschappen"}`; } catch {}
         }

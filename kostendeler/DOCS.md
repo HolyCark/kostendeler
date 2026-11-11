@@ -38,6 +38,10 @@ Tip: wil je huisgenoot verder weinig van Home Assistant zien? Die kan via **Prof
 
 Tik op een uitgave om hem te bewerken of te verwijderen. Verwijderd per ongeluk? Tik binnen 6 seconden op **Ongedaan maken**.
 
+## Uitgave laten herhalen
+
+Kies bij een nieuwe uitgave onder **Herhalen** voor *Elke maand*. De uitgave wordt opgeslagen en komt daarna elke maand op dezelfde dag vanzelf in de lijst. Aanpassen, pauzeren of stoppen doe je bij **Instellingen → Vaste kosten**.
+
 ## Meldingen
 
 Ga in de app naar **Instellingen → Meldingen** en kies je telefoon (die verschijnt zodra je bent ingelogd in de Home Assistant Companion-app). Daarna kun je per soort melding kiezen:

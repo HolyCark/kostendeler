@@ -1352,12 +1352,28 @@ class Handler(BaseHTTPRequestHandler):
             return 200, compute_summary(db, year) if year else self.summary(db, require_month(qs))
 
         if path == "/expenses" and method == "POST":
-            data = validate_expense(db, self.read_json())
+            body = self.read_json()
+            data = validate_expense(db, body)
+            repeat = body.get("repeat") or None
+            if repeat not in (None, "month"):
+                raise ApiError(400, "Ongeldige herhaling")
+            rid = month = None
+            if repeat:
+                # Meteen een vaste uitgave van maken: deze telt als eerste keer, daarna elke maand op dezelfde dag.
+                month = data["date"][:7]
+                cur = db.execute(
+                    "INSERT INTO recurring(description, amount, paid_by, category_id, day, start_month, last_month, "
+                    "created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (data["description"], data["amount"], data["paid_by"], data["category_id"],
+                     int(data["date"][8:10]), month, month, me))
+                rid = cur.lastrowid
+                db.executemany("INSERT INTO recurring_shares(recurring_id, user_id, amount) VALUES (?, ?, ?)",
+                               [(rid, u, c) for u, c in data["shares"].items()])
             cur = db.execute(
-                "INSERT INTO expenses(description, amount, paid_by, date, category_id, created_by) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO expenses(description, amount, paid_by, date, category_id, created_by, recurring_id, "
+                "recurring_month) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (data["description"], data["amount"], data["paid_by"], data["date"],
-                 data["category_id"], me),
+                 data["category_id"], me, rid, month),
             )
             eid = cur.lastrowid
             db.executemany(
@@ -1365,6 +1381,8 @@ class Handler(BaseHTTPRequestHandler):
                 [(eid, uid, c) for uid, c in data["shares"].items()],
             )
             db.commit()
+            if repeat:
+                generate_recurring(db)  # datum in een eerdere maand: tussenliggende maanden aanvullen
             return 201, expense_rows(db, "e.id = ?", (eid,))[0]
 
         m = re.fullmatch(r"/expenses/(\d+)", path)
