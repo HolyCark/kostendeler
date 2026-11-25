@@ -1,0 +1,19 @@
+@font-face {
+  font-family: "Outfit";
+  src: url("fonts/outfit.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font: 400 16px/1.4 "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* De kaart heeft een hoogte nodig, anders zie je niets */
+#map {
+  height: 100%;
+}
+
+/* TODO: eigen stijl (popups, filters, lijst, donkere modus) */
